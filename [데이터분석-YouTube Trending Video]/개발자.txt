@@ -1,0 +1,7 @@
+데이터 분석 프로젝트
+
+- 데이터 제공 : https://www.aladin.co.kr/shop/common/wbest.aspx?BranchType=1&start=we
+               https://www.kaggle.com/rsrishav/youtube-trending-video-dataset
+               
+- 수행 기간 : 2020.11 ~ 2020.12
+- 개발자 : 윤정인, 김X나
