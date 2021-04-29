@@ -1,0 +1,217 @@
+﻿*::selection {
+    background-color: #A1B859;
+    color: white;
+}
+
+.top_menu_left{
+    float:left;
+    width:50%;
+    height:30px;
+    text-align:left;
+}
+
+.top_menu_right{
+    float:right;
+    width:50%;
+    height:30px;
+    text-align:right;
+}
+
+body 
+{
+     font-family:/*"나눔스퀘어라운드 Regular",*/"나눔스퀘어라운드 Bold", "나눔스퀘어라운드 ExtraBold", "나눔스퀘어라운드볼드"
+	/*로컬(자기 컴퓨터)에 깔려있는 글꼴이라면 맨 첫번째거부터 가져와서 씀 */
+}
+
+ul 
+{
+	list-style: none; /*ul, li태그 스타일속성 없앰*/
+	 /*메뉴바 배경색 지정*/
+	/*float: right;*/
+    
+}
+
+li
+{
+        display:inline-block; /*horizontal식 정렬 사용*/
+}
+
+li a 
+{
+    
+   display: block; /*메뉴바 자체 굵기를 굵게*/
+
+   padding: 5px 5px; /*메뉴바 굵기 사이즈 설정*/
+
+   text-decoration: none; /* <a>태그 스타일 속성 없앰*/
+}
+
+a
+{
+	color:black; /*모든 a태그 색깔 검정색으로*/
+    text-decoration:none;
+}
+
+.MainMenu_bar
+{
+    text-align:left;
+    font-size:27px;
+    padding-top:40px;
+}
+
+
+
+/*왼쪽 숨김메뉴 시작 ------------------------------------------------------------------------------------------------------------*/
+.sidenav {
+  height: 100%;
+  width: 0;
+  position: fixed;
+  z-index: 0;
+  top: 0;
+  left: 0;
+  background-color: white;
+  overflow-x: hidden;
+  transition: 0.5s;
+  padding-top: 60px;
+
+  border-style: solid; /*메뉴가 숨어있을 때 이거 없애는 방법 알아내기*/
+  border-color: #A1B859;
+}
+
+.sidenav a {
+  padding: 8px 8px 8px 32px;
+  text-decoration: none;
+  font-size: 20px;
+  color: black;
+  display: block;
+  transition: 0.3s;
+}
+
+.sidenav .closebtn {
+  position: absolute;
+  top: 0;
+  right: 25px;
+  font-size: 36px;
+  margin-left: 50px;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+
+.sidenav .menufont
+{
+	text-decoration: underline;
+	font-size: 30px;
+	cursor: default;
+}
+
+/*왼쪽 숨김 메뉴 끝 ------------------------------------------------------------------------------------------------------------*/
+
+/*오른쪽 숨김메뉴 시작 ------------------------------------------------------------------------------------------------------------*/
+.sidenav2 {
+  height: 100%;
+  width: 0;
+  position: fixed;
+  z-index: 0;
+  top: 0;
+  right: 0; /*좌측, 우측 메뉴 구분*/
+  background-color: white;
+  transition: 0.5s;
+  padding-top: 60px;
+
+  border-style: solid;
+  border-color: #A1B859;
+}
+
+.sidenav2 a {
+  padding: 8px 8px 8px 32px;
+  text-decoration: none;
+  font-size: 20px;
+  color: black;
+  display: block;
+  transition: 0.3s;
+}
+
+.sidenav2 .closebtn2 {
+  position: absolute;
+  top: 0;
+  /*right: 25px;*/
+  font-size: 36px;
+  /*margin-left: 50px;*/
+  float:left;
+}
+
+.sidenav2 .menufont
+{
+	text-decoration: underline; /*메뉴 이름 폰트 underline 속성*/
+	font-size: 30px;
+	cursor: default;/*a 태그를 이용했을 때 나타나는 마우스 커서 default모양으로 바꿔줌*/
+}
+
+.sidenav2 .chatchar
+{
+	float: right; /*챗봇 캐릭터 오른쪽 정렬*/
+}
+
+.closebtn2 a
+{
+	float: left;
+}
+
+/*오른쪽 숨김메뉴 끝 ------------------------------------------------------------------------------------------------------------*/
+
+.sidediv
+{
+          float:left; 
+          width:250px; 
+          /*height:500px;*/
+          padding:10px;
+}
+
+.sidediv2
+{
+          float:right; 
+          width:250px; 
+          /*height:400px;*/
+          padding:10px;
+}
+
+.footer {
+        clear:both;
+        /*width:100%; */
+        background-color:#F0F7E5;
+        margin-left:250px; 
+        margin-right:250px;
+}
+
+.article{
+        float:left;
+        /*min-width:400px;
+        min-height:300px;*/
+        /*margin-left : -30px; 
+          margin-right:30px;
+        */
+}
+
+.panel 
+{
+    display:inline;
+}
+
+.logout_btn
+{
+
+
+            background:none;
+            border:none;
+            font-family:NanumSquareRound;
+}
+
+.panel .logout_btn
+{
+            background:none;
+            border:none;
+            font-family:NanumSquareRound;
+}

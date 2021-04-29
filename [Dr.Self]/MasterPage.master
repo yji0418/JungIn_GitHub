@@ -1,0 +1,173 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="MasterPage.master.cs" Inherits="MasterPage" %>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Dr.Self</title>
+  <link rel="stylesheet" href="style.css"/>
+
+
+<script type="text/javascript" >
+    function openNav()
+    { /*왼쪽 메뉴*/
+        document.getElementById("mySidenav").style.width = "250px"; /*openNav()가 호출되면 250px만큼 튀어나오기*/
+    }
+
+    function closeNav() {
+        document.getElementById("mySidenav").style.width = "0";
+    }
+
+    function openNav2() /*오른쪽 메뉴*/ {
+        document.getElementById("mySidenav2").style.width = "250px";
+    }
+
+    function closeNav2() {
+        document.getElementById("mySidenav2").style.width = "0";
+    }
+
+    // input에서 Enter key 를 눌러서 Submit이 발생하는 것을 방지.
+
+    // 단, textarea는 제외
+
+    function CancelEnterKey()
+
+    {
+
+        var evt = (evt) ? evt : ((event) ? event : null);
+
+        var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
+
+        if ((evt.keyCode == 13) && (node.type == "text")) { return false; }
+
+    }
+
+ 
+
+    // 2012/04/23 form에서 textbox(input type)인 경우 엔터키가 동작하지 않도록 함. by bhChoi
+    document.onkeypress = CancelEnterKey;
+
+</script><!--스크립트랑 연결-->
+
+  <style>
+
+        </style>
+    <asp:ContentPlaceHolder id="head" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <!--여기서부터 붙여넣기 시작-->
+        <div class="top_menu_left">
+            
+        </div>
+
+        <div class="top_menu_right">
+            <ul>
+                <asp:Label ID="Label1" runat="server" Text="Label" style="color:#496003;"></asp:Label>&nbsp;&nbsp;&nbsp;                   
+                <asp:Panel ID="Panel1" runat="server" CssClass="panel"><li><a href="/login.aspx" style="font-family:NanumSquareRound; font-size:16px; background:none; border:none; font-weight:800; color:#496003; cursor:pointer;" >로그인</a></li>&nbsp;&nbsp;&nbsp;</asp:Panel> 
+                <asp:Panel ID="Panel2" runat="server" CssClass="panel"><li><asp:Button ID="Button1" runat="server" Text="로그아웃" OnClick="Button1_Click" style="font-family:NanumSquareRound; font-size:16px; background:none; border:none; font-weight:800; color:#787878; cursor:pointer;" /></li>&nbsp;&nbsp;&nbsp;</asp:Panel>
+                <asp:Panel ID="Panel3" runat="server" CssClass="panel"><li><a href="/join.aspx" style="color:#818181;font-family:NanumSquareRound;font-weight:900;">회원가입</a></li>&nbsp;&nbsp;&nbsp;</asp:Panel>
+                <li><a href="/board.aspx" style="color:#818181;">게시판</a></li>&nbsp;&nbsp;&nbsp;
+                <li><a href="/notice_board.aspx" style="color:#818181;">공지사항</a></li>&nbsp;&nbsp;&nbsp;&nbsp;
+                <li><a href="/chat_pop.aspx" onclick="window.open(this.href,'_blank','width=400px, height=400px,toolbars=no, scrollbars=no');return false;" style="color:#818181;">고객센터</a></li>&nbsp;&nbsp;&nbsp;
+            </ul>
+        </div>
+            <!--메인 로고 시작 -->
+            <div align="center">
+                <a href="/main.aspx"><img src="/img/Main_logo.jpg" style="width: 480px"/></a>
+            </div>
+            <!--메인 로고 끝-->
+
+           <!--메인 메뉴바 시작-->
+           <div style="width:100%" class="MainMenu_bar">
+               <ul>
+                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                   <li><span style="cursor:pointer;" onclick="openNav()"><img src="/img/menu_icon.png" style="width: 30px"/></span></li>
+                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                   &nbsp;&nbsp;
+                   <li><a href="/sub1.aspx" class="mainbar1">어디 아파?</a></li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                   <li><a href="/sub2.aspx" class="mainbar2">이건 무슨 약?</a></li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                   <li><a href="/sub3.aspx" class="mainbar3">음식 + 약물 = ?</a></li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                   <li><a href="/sub4.aspx" class="mainbar4">무슨 뜻일까?</a></li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                   <li><a href="/sub5.aspx" class="mainbar5">어디로 갈까?</a></li>&nbsp;&nbsp;&nbsp;&nbsp;
+                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                 <li><span style="cursor: pointer;" onclick="openNav2()"><img src = "/img/login_icon.png" style="width: 30px"/></span></li>
+               </ul>
+            </div>
+           <!--메인 메뉴바 끝-->
+
+        <hr style="border:solid 1px #818181;"/>
+        <div class="sidediv"></div> <!--content 영역을 가운데로 보내기 위한 투명 div-->
+                <!--콘텐츠 영역 시작 입니다!!! 여기 건들이지 마세요!-->
+     <div class="article">
+        <asp:ContentPlaceHolder id="ContentPlaceHolder1" runat="server">
+            <div></div>
+        </asp:ContentPlaceHolder>
+    </div>
+       <div class="sidediv2"></div> 
+        <br />
+        <!-- 콘텐츠 영역 끝 입니다!! 여기 건들이지 마세요!-->
+        <!--content 영역을 가운데로 보내기 위한 투명 div-->
+
+
+           <!--좌측 숨김 메뉴 시작-->
+            <div id="mySidenav" class="sidenav">
+                    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+                    <br />
+                    <br />
+                    <a href="#" class="menufont"><b>MENU</b></a><br/>
+                    <br/>
+                    <a href="/sub1.aspx">어디 아파?</a>
+                    <br />
+                    <a href="/sub2.aspx">이건 무슨 약?</a>
+                    <br />
+                    <a href="/sub3.aspx">음식 + 약물 = ?</a>
+                    <br />
+                    <a href="/sub4.aspx">무슨 뜻일까?</a>
+                    <br />
+                    <a href="/sub5.aspx">어디로 갈까?</a>
+            </div>
+           <!--좌측 숨김 메뉴 끝-->
+
+
+
+          <!-- 우측 숨김 메뉴 시작-->
+            <div id="mySidenav2" class="sidenav2">
+                <a href="javascript:void(0)" class="closebtn2" onclick="closeNav2()">&times;</a>
+                <br />
+                <br /><a href="#" class="menufont"><b>MY ACCOUNT</b></a><br/>
+                <br />
+                <br/><a href="/login.aspx">로그인</a>
+                <br /><a href="/join.aspx">회원가입</a>
+                <br /><a href="MemberOnly/login_mypage_view.aspx">마이페이지</a>
+                <br/>
+                <br />
+                <br /><a href="#" class="menufont"><b>BOARD</b></a><br/>
+                <br />
+                <br/><a href="/board.aspx">게시판</a><br />
+                <a href="/notice_board">공지사항</a>
+                <br /><a href="/chat_pop.aspx" onclick="window.open(this.href,'_blank','width=400px, height=400px,toolbars=no, scrollbars=no');return false;">고객센터</a>
+                <br/><a href="/chat_pop.aspx" onclick="window.open(this.href,'_blank','width=400px, height=400px,toolbars=no, scrollbars=no');return false;" class="chatchar">
+                <img src="/img/Chat_Char.jpg" style="width: 5.0em"/></a>
+            </div>
+            <!--우측 숨김 메뉴 끝-->
+
+            <!--Footer 시작-->
+            <div class="footer" >
+                <br />
+                <a href="#">웹 소개 |</a> <a href="#">사이트 맵 |</a> <a href="#">인재 채용 |</a> <a href="#">개인정보 처리방침 |</a> <a href="#">이메일문의 |</a> <a href="#">고객센터</a>
+                <img src="/img/footer_icon.png" width="120" height="40" style="float:left"/>
+                <pre>
+서울특별시 종로구 필운대로 1길 34
+                <b>TEL</b> 02-399-0700 <b>FAX</b> 02-737-8431
+                Copyright ⓒ BAEWHA WOMEN'S UNIVERSITY. All Rights Reserved
+            </pre>
+            </div>
+           <!--Footer 끝! 끼얏호!!-->
+    </form>
+</body>
+</html>

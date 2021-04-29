@@ -1,0 +1,79 @@
+﻿
+        *
+        {
+            margin:0px;
+            padding:0px;
+        }
+
+        body 
+        {
+             font-family:"메이플스토리 Light";
+        }
+
+        .header
+        {
+            height:100px;
+        }
+
+        .header_name
+        {
+            display:inline;
+            width:25%;
+            float:left;
+            color:white;
+            height:50px;
+            font-size:20pt;
+        }
+        
+        .header_util
+        {
+            width:70%;
+            float:right;
+            height:50px;
+            text-align:right;
+        }
+
+        a
+        {
+            text-decoration:none;
+        }
+
+        ul
+        {
+            list-style:none;
+        }
+        li
+        {
+            display:inline-block;
+        }
+
+        li a
+        {
+            text-decoration:none;
+        }
+
+        .panel
+        {
+            display:inline;
+        }
+        
+        .util_text
+        {
+            font-family:메이플스토리 Light; 
+            font-size:16pt; 
+            background:none; 
+            border:none; 
+            color:#ffffff;
+            cursor:pointer;
+        }
+
+        .home_a pre
+        {
+            color:white;
+            text-decoration-color:none;
+        }
+
+        .home_a pre:hover
+        {
+            color:#F68500;
+        }

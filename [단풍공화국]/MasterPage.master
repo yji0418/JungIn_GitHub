@@ -1,0 +1,56 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="MasterPage.master.cs" Inherits="MasterPage" %>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+      <link rel="stylesheet" href="StyleSheet.css"/>
+    <asp:ContentPlaceHolder id="head" runat="server">
+    </asp:ContentPlaceHolder>
+
+
+</head>
+<body>
+    <form id="form1" runat="server">
+    <div class="header">
+        <div class="header_name">
+            <a href="/Home.aspx" class="home_a"><pre style="font-size:20pt; font-family:메이플스토리 Light;">단풍자치국</pre></a>
+        </div>
+
+        <div class="header_util">
+
+            <ul>
+                <li><a href="/Home.aspx" class="util_text">홈</a></li>&nbsp;&nbsp;&nbsp;&nbsp;
+                <asp:Label ID="Label1" runat="server"  CssClass="util_text"></asp:Label>&nbsp;&nbsp;&nbsp;&nbsp;
+                <asp:Panel ID="Panel1" runat="server" CssClass="panel">
+                    <li><a href="/myLogin.aspx" class="util_text">로그인</a></li>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <li><a href="/Register.aspx"  class="util_text">회원가입</a></li>&nbsp;&nbsp;&nbsp;&nbsp;
+                </asp:Panel>
+                <asp:Panel ID="Panel2" runat="server" CssClass="panel">
+                    <li><asp:Button ID="Button1" runat="server" Text="로그아웃" class="util_text" CausesValidation="False" OnClick="Button1_Click" /></li>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <li><a href="/MemberOnly/Modify.aspx" class="util_text">마이페이지</a></li>&nbsp;&nbsp;&nbsp;&nbsp;
+                </asp:Panel>
+                <li><a href="/Album/List.aspx" class="util_text">앨범</a></li>&nbsp;&nbsp;&nbsp;&nbsp;
+                <li><a href="/Board/Board_List.aspx" class="util_text">게시판</a></li>&nbsp;&nbsp;&nbsp;&nbsp;
+                <li><a href="/MemberOnly/CalendarEx.aspx" class="util_text">달력</a></li>&nbsp;&nbsp;&nbsp;&nbsp;
+                <li><a href="/MemberOnly/DBtest.aspx" class="util_text">마이 메이플</a></li>&nbsp;&nbsp;&nbsp;&nbsp;                
+            </ul>
+                        
+        </div>
+    </div>
+
+
+    <center>
+    <div class="article">
+        <asp:ContentPlaceHolder id="ContentPlaceHolder1" runat="server">
+            <p>
+                콘텐츠영역</p>
+        </asp:ContentPlaceHolder>
+    </div>
+     </center>
+
+    </form>
+</body>
+</html>

@@ -1,0 +1,1823 @@
+#---------------------------------------------------------------------------- 단어 연관성(제목)
+
+#사전 초기화
+useNIADic()
+
+#새로운 단어 추가
+mergeUserDic(data.frame("Youtube","ncn"))
+
+mergeUserDic(data.frame("유튜브","ncn"))
+
+mergeUserDic(data.frame("프리미어","ncn"))
+
+mergeUserDic(data.frame("프리미어리그","ncn"))
+
+mergeUserDic(data.frame("웹드라마","ncn"))
+
+mergeUserDic(data.frame("포토샵","ncn"))
+
+mergeUserDic(data.frame("크리에이터","ncn"))
+
+mergeUserDic(data.frame("일러스트레이터","ncn"))
+
+mergeUserDic(data.frame("일러스트","ncn"))
+
+mergeUserDic(data.frame("베가스","ncn"))
+
+mergeUserDic(data.frame("어도비","ncn"))
+
+mergeUserDic(data.frame("애프터이펙트","ncn"))
+
+mergeUserDic(data.frame("유튜버","ncn"))
+
+mergeUserDic(data.frame("코로나","ncn"))
+
+install.packages("Sejong")
+library(Sejong)
+
+word_title <- readLines("E:/DataMining/WordCloud_Title.txt")#불러오기
+
+lword_title <- str_replace_all(word_title, "\\W", " ") #특수문자 제거
+
+lword_title <- extractNoun(lword_title)
+
+filter1 <- function(x){ #2글자에서 4글자 사이, 한글만
+  nchar(x) >= 2 && nchar(x) <= 6
+}
+
+filter2 <- function(x){
+  Filter(filter1,x)
+}
+
+lword_title <- sapply(lword_title, filter2) #단어길이 1이하 또는 5이상인 단어 제거
+head(lword_title)
+
+library(arules)
+
+title_tran <- as(lword_title, "transactions") #트랜잭션 생성
+View(title_tran)
+
+wordtable_title <- crossTable(title_tran) #교차평 작성
+
+#단어간 연관 규칙 산출/ support: 지지도, 해당 규칙이 얼마나 의미가 있나? 
+#/ conf : 신뢰도 사건 A가 발생했을 때, 사건 B가 일어날 확률이 얼마나 높은가?
+transrlues_title <- apriori(title_tran, parameter = list(support=0.001, conf=0.02))
+
+inspect(transrlues_title) #연관규칙 생성 결과 조회
+
+rules_title <- labels(transrlues_title, ruleSep= " ") #연관어 시각화
+
+rules_title <- sapply(rules_title, strsplit, " ", USE.NAMES=F) #문자열로 묶인 연관 단어를 행렬 구조로 변경
+class(rules_title)
+
+rulemat_title <- do.call("rbind", rules_title) #행단위로 묶어서 행렬로 반환
+class(rulemat_title)
+
+library(igraph)
+
+relueg_title <- graph.edgelist(rulemat_title[c(12:59),], directed = F) #{} 제외하고, 연관단어를 vertex형태로 목록 제공
+
+plot.igraph(relueg_title) #최종 그래프로 시각화
+
+plot.igraph(relueg_title, vertex.label=V(relueg_title)$name, vertext.label.cex=1.2, vertex.label.color='black',
+            vertext.size=80, vertex.color='orange', vertex.frame.color='orange')
+
+#----------------------------------------------------------------단어 연관성 끝
+
+#----------------------------------------------------------------알라딘 데이터 분석 시작
+WC_book_2020_1 <- readLines("C:/Users/adda9/Downloads/알라딘_데이터/2020_도서_중복아님.txt")
+
+View(WC_book_2020_1)
+
+#특수문자 제거
+WC_book_2020_1 <- str_replace_all(WC_book_2020_1, "\\W", " ")
+WC_book_2020_1[1:10]
+
+#제목에서 명사만 추출
+WC_nouns_book_2020_1 <- extractNoun(WC_book_2020_1)
+str(WC_nouns_book_2020_1)
+
+#명사들로 이루어진 리스트를 돗수분포표 형태로 변환
+WC_nouns_2020_Count_1 <- table(unlist(WC_nouns_book_2020_1))
+
+#돗수분포표를 데이터 프레임으로 변환
+WC_nouns_2020_df_1 <- as.data.frame(WC_nouns_2020_Count_1, stringsAsFactors = F)
+
+#데이터프레임 컬럼명 변경
+WC_nouns_2020_df_1 <- rename(WC_nouns_2020_df_1, 명사=Var1, 빈도수=Freq)
+
+#한 글자의 경우 명사가 아닌 경우가 많으므로, 제외
+WC_result_df_2020_1 <- WC_nouns_2020_df_1 %>% filter(nchar(명사) >= 2) %>% arrange(desc(빈도수))
+View(WC_result_df_2020_1)
+
+#워드클라우드 만들기
+
+#워드클라우드를 생성할 때 마다 동일한 모양으로 생성되도록 시드를 저장
+set.seed(20201) 
+
+#color_vector사용
+colorVec = rep(c('#232B2B', '#DC3D24'), length.out=nrow(demoFreq))
+
+wordcloud2(data = WC_result_df_2020_1, fontFamily = "나눔고딕", color=colorVec)
+
+
+#------------------------------------------2010년 워드클라우드
+WC_book_2010_1 <- readLines("C:/Users/adda9/Downloads/알라딘_데이터/2010_도서_중복아님.txt")
+
+View(WC_book_2010_1)
+
+#특수문자 제거
+WC_book_2010_1 <- str_replace_all(WC_book_2010_1, "\\W", " ")
+WC_book_2010_1[1:10]
+
+#제목에서 명사만 추출
+WC_nouns_book_2010_1 <- extractNoun(WC_book_2010_1)
+str(WC_nouns_book_2010_1)
+
+#명사들로 이루어진 리스트를 돗수분포표 형태로 변환
+WC_nouns_2010_Count_1 <- table(unlist(WC_nouns_book_2010_1))
+
+#돗수분포표를 데이터 프레임으로 변환
+WC_nouns_2010_df_1 <- as.data.frame(WC_nouns_2010_Count_1, stringsAsFactors = F)
+
+#데이터프레임 컬럼명 변경
+WC_nouns_2010_df_1 <- rename(WC_nouns_2010_df_1, 명사=Var1, 빈도수=Freq)
+
+#한 글자의 경우 명사가 아닌 경우가 많으므로, 제외
+WC_result_df_2010_1 <- WC_nouns_2010_df_1 %>% filter(nchar(명사) >= 2) %>% arrange(desc(빈도수))
+View(WC_result_df_2010_1)
+
+#워드클라우드 만들기
+
+#워드클라우드를 생성할 때 마다 동일한 모양으로 생성되도록 시드를 저장
+set.seed(20101) 
+
+#color_vector사용
+colorVec = rep(c('#232B2B', '#DC3D24'), length.out=nrow(demoFreq))
+
+wordcloud2(data = WC_result_df_2010_1, fontFamily = "나눔고딕", color=colorVec)
+
+#----------------------------------------------------------------------------------- 꺾은선 그래프
+
+#---------------------------------꺾은선 그래프
+
+all_total_book <- read_excel("C:/Users/adda9/Downloads/알라딘_데이터/all_total.xlsx")
+
+all_total_2009 <- sum(str_count(book_data_2009$상품명,"유튜브"))
+all_total_2009
+
+all_total_2010 <- sum(str_count(book_data_2010$상품명,"유튜브"))
+all_total_2010
+
+all_total_2011 <- sum(str_count(book_data_2011$상품명,"유튜브"))
+all_total_2011
+
+all_total_2012 <- sum(str_count(book_data_2012$상품명,"유튜브"))
+all_total_2012
+
+all_total_2013 <- sum(str_count(book_data_2013$상품명,"유튜브"))
+all_total_2013
+
+all_total_2014 <- sum(str_count(book_data_2014$상품명,"유튜브"))
+all_total_2014
+
+all_total_2015 <- sum(str_count(book_data_2015$상품명,"유튜브"))
+all_total_2015
+
+all_total_2016 <- sum(str_count(book_data_2016$상품명,"유튜브"))
+all_total_2016
+
+all_total_2017 <- sum(str_count(book_data_2017$상품명,"유튜브"))
+all_total_2017
+
+all_total_2018 <- sum(str_count(book_data_2018$상품명,"유튜브"))
+all_total_2018
+
+all_total_2019 <- sum(str_count(book_data_2019$상품명,"유튜브"))
+all_total_2019
+
+all_total_2020 <- sum(str_count(book_data_2020$상품명,"유튜브"))
+all_total_2020
+
+
+all_total_keyword <- read_excel("C:/Users/adda9/Downloads/알라딘_데이터/all_total_cal.xlsx")
+View(all_total_keyword)
+
+all_total_gg <- ggplot(data = all_total_keyword)+
+                geom_line(aes(x=year, y = 유튜브), color = "#E74D54", linetype =1, size = 1.5)+
+                geom_line(aes(x=year, y = 프리미어), color="#E373F7", linetype=1, size=1)+
+                geom_line(aes(x=year, y = 베가스), color = "#1195CF", linetype=1, size=1)+
+                geom_line(aes(x=year, y = 애프터이펙트), color="#000058", linetype=1, size=1)+
+                geom_point(aes(x=year, y=유튜브), color="#E74D54", size=2)+
+                geom_point(aes(x=year, y=프리미어), color="#E373F7", size=2)+
+                geom_point(aes(x=year, y=베가스), color="#1195CF",  size=2)+
+                geom_point(aes(x=year, y=애프터이펙트), color="#000058",  size=2)+
+                ggtitle("알라딘 베스트셀러 유튜브 키워드 언급 추이")+
+                xlab("년도")+
+                ylab("키워드 빈도수")+
+                scale_x_continuous(breaks=seq(min(all_total_keyword$year), max(all_total_keyword$year)))
+
+all_total_gg
+
+ggsave(file="C:/Users/adda9/Downloads/알라딘_데이터/graph.jpg", dpi=300)
+
+#---------------------------------막대 그래프
+
+#년도 별로 제일 잘팔린 책 1~5위까지 나타낸 막대그래프 그리기
+#데이터 중복처리하지 않은 csv파일 사용
+
+library(readxl)
+library(dplyr)
+
+#2009년 데이터 전처리&csv 파일내보내기
+m1<-read_excel("D:/aladin_best/2009/2009.01.xlsx")
+rem1<-m1%>% select(순번,상품명)
+rem1<-rem1%>% filter(rem1$순번<=100) #랭킹 100위까지 뽑아냄
+rem1$point1 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem1<-rem1%>%select(-순번) #순번 컬럼 지우기
+rem1<-rename(rem1,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m2<-read_excel("D:/aladin_best/2009/2009.02.xlsx")
+rem2<-m2%>% select(순번,상품명)
+rem2<-rem2%>% filter(rem2$순번<=100) #랭킹 100위까지 뽑아냄
+rem2$point2 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem2<-rem2%>%select(-순번) #순번 컬럼 지우기
+rem2<-rename(rem2,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m3<-read_excel("D:/aladin_best/2009/2009.03.xlsx")
+rem3<-m3%>% select(순번,상품명)
+rem3<-rem3%>% filter(rem3$순번<=100) #랭킹 100위까지 뽑아냄
+rem3$point3 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem3<-rem3%>%select(-순번) #순번 컬럼 지우기
+rem3<-rename(rem3,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m4<-read_excel("D:/aladin_best/2009/2009.04.xlsx")
+rem4<-m4%>% select(순번,상품명)
+rem4<-rem4%>% filter(rem4$순번<=100) #랭킹 100위까지 뽑아냄
+rem4$point4 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem4<-rem4%>%select(-순번) #순번 컬럼 지우기
+rem4<-rename(rem4,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m5<-read_excel("D:/aladin_best/2009/2009.05.xlsx")
+rem5<-m5%>% select(순번,상품명)
+rem5<-rem5%>% filter(rem5$순번<=100) #랭킹 100위까지 뽑아냄
+rem5$point5 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem5<-rem5%>%select(-순번) #순번 컬럼 지우기
+rem5<-rename(rem5,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m6<-read_excel("D:/aladin_best/2009/2009.06.xlsx")
+rem6<-m6%>% select(순번,상품명)
+rem6<-rem6%>% filter(rem6$순번<=100) #랭킹 100위까지 뽑아냄
+rem6$point6 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem6<-rem6%>%select(-순번) #순번 컬럼 지우기
+rem6<-rename(rem6,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m7<-read_excel("D:/aladin_best/2009/2009.07.xlsx")
+rem7<-m7%>% select(순번,상품명)
+rem7<-rem7%>% filter(rem7$순번<=100) #랭킹 100위까지 뽑아냄
+rem7$point7 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem7<-rem7%>%select(-순번) #순번 컬럼 지우기
+rem7<-rename(rem7,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m8<-read_excel("D:/aladin_best/2009/2009.08.xlsx")
+rem8<-m8%>% select(순번,상품명)
+rem8<-rem8%>% filter(rem8$순번<=100) #랭킹 100위까지 뽑아냄
+rem8$point8 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem8<-rem8%>%select(-순번) #순번 컬럼 지우기
+rem8<-rename(rem8,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m9<-read_excel("D:/aladin_best/2009/2009.09.xlsx")
+rem9<-m9%>% select(순번,상품명)
+rem9<-rem9%>% filter(rem9$순번<=100) #랭킹 100위까지 뽑아냄
+rem9$point9 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem9<-rem9%>%select(-순번) #순번 컬럼 지우기
+rem9<-rename(rem9,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m10<-read_excel("D:/aladin_best/2009/2009.10.xlsx")
+rem10<-m10%>% select(순번,상품명)
+rem10<-rem10%>% filter(rem10$순번<=100) #랭킹 100위까지 뽑아냄
+rem10$point10 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem10<-rem10%>%select(-순번) #순번 컬럼 지우기
+rem10<-rename(rem10,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m11<-read_excel("D:/aladin_best/2009/2009.11.xlsx")
+rem11<-m11%>% select(순번,상품명)
+rem11<-rem11%>% filter(rem11$순번<=100) #랭킹 100위까지 뽑아냄
+rem11$point11 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem11<-rem11%>%select(-순번) #순번 컬럼 지우기
+rem11<-rename(rem11,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m12<-read_excel("D:/aladin_best/2009/2009.12.xlsx")
+rem12<-m12%>% select(순번,상품명)
+rem12<-rem12%>% filter(rem12$순번<=100) #랭킹 100위까지 뽑아냄
+rem12$point12 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem12<-rem12%>%select(-순번) #순번 컬럼 지우기
+rem12<-rename(rem12,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+#통합
+total_point <-full_join(rem1,rem2,by='name') #최대 2개의 프레임만 병합가능
+total_point<-full_join(total_point,rem3,by='name')
+total_point<-full_join(total_point,rem4,by='name')
+total_point<-full_join(total_point,rem5,by='name')
+total_point<-full_join(total_point,rem6,by='name')
+total_point<-full_join(total_point,rem7,by='name')
+total_point<-full_join(total_point,rem8,by='name')
+total_point<-full_join(total_point,rem9,by='name')
+total_point<-full_join(total_point,rem10,by='name')
+total_point<-full_join(total_point,rem11,by='name')
+total_point<-full_join(total_point,rem12,by='name')
+
+#결측값 NA를 0으로 변환
+total_point[is.na(total_point)]<-0
+
+#각 책별로 월별 포인트 값 모두 더하기 
+total_point$total.point <-total_point$point1+total_point$point2+total_point$point3+
+  total_point$point4+total_point$point5+total_point$point6+total_point$point7+
+  total_point$point8+total_point$point9+total_point$point10+total_point$point11+
+  total_point$point12
+
+#필요 없어진 컬럼 제거(point1,point2......point12)
+total_point<-total_point%>%select(-point1,-point2,-point3,-point4,-point5,-point6,
+                                  -point7,-point8,-point9,-point10,-point11,-point12) 
+
+#point가 제일 큰값이 앞에 오게 정렬
+total_point_order <- total_point[c(order(-total_point$total.point)),]
+#상위값 1~5까지만 추출
+total_point_order<-head(total_point_order,n=5)
+#빈도값 컬럼 추가(그래프 표현시 모양이 예쁘게 나오기 위해)
+total_point_order$freq <-c(100,80,60,40,20)
+
+#csv파일로 내보내기
+write.csv(total_point_order,"D:/aladin_best/years_top1~5/top5_2009.csv",row.names=FALSE)
+
+
+
+
+#2010년 데이터 전처리&csv 파일내보내기
+m1<-read_excel("D:/aladin_best/2010/2010.01.xlsx")
+rem1<-m1%>% select(순번,상품명)
+rem1<-rem1%>% filter(rem1$순번<=100) #랭킹 100위까지 뽑아냄
+rem1$point1 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem1<-rem1%>%select(-순번) #순번 컬럼 지우기
+rem1<-rename(rem1,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m2<-read_excel("D:/aladin_best/2010/2010.02.xlsx")
+rem2<-m2%>% select(순번,상품명)
+rem2<-rem2%>% filter(rem2$순번<=100) #랭킹 100위까지 뽑아냄
+rem2$point2 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem2<-rem2%>%select(-순번) #순번 컬럼 지우기
+rem2<-rename(rem2,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m3<-read_excel("D:/aladin_best/2010/2010.03.xlsx")
+rem3<-m3%>% select(순번,상품명)
+rem3<-rem3%>% filter(rem3$순번<=100) #랭킹 100위까지 뽑아냄
+rem3$point3 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem3<-rem3%>%select(-순번) #순번 컬럼 지우기
+rem3<-rename(rem3,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m4<-read_excel("D:/aladin_best/2010/2010.04.xlsx")
+rem4<-m4%>% select(순번,상품명)
+rem4<-rem4%>% filter(rem4$순번<=100) #랭킹 100위까지 뽑아냄
+rem4$point4 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem4<-rem4%>%select(-순번) #순번 컬럼 지우기
+rem4<-rename(rem4,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m5<-read_excel("D:/aladin_best/2010/2010.05.xlsx")
+rem5<-m5%>% select(순번,상품명)
+rem5<-rem5%>% filter(rem5$순번<=100) #랭킹 100위까지 뽑아냄
+rem5$point5 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem5<-rem5%>%select(-순번) #순번 컬럼 지우기
+rem5<-rename(rem5,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m6<-read_excel("D:/aladin_best/2010/2010.06.xlsx")
+rem6<-m6%>% select(순번,상품명)
+rem6<-rem6%>% filter(rem6$순번<=100) #랭킹 100위까지 뽑아냄
+rem6$point6 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem6<-rem6%>%select(-순번) #순번 컬럼 지우기
+rem6<-rename(rem6,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m7<-read_excel("D:/aladin_best/2010/2010.07.xlsx")
+rem7<-m7%>% select(순번,상품명)
+rem7<-rem7%>% filter(rem7$순번<=100) #랭킹 100위까지 뽑아냄
+rem7$point7 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem7<-rem7%>%select(-순번) #순번 컬럼 지우기
+rem7<-rename(rem7,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m8<-read_excel("D:/aladin_best/2010/2010.08.xlsx")
+rem8<-m8%>% select(순번,상품명)
+rem8<-rem8%>% filter(rem8$순번<=100) #랭킹 100위까지 뽑아냄
+rem8$point8 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem8<-rem8%>%select(-순번) #순번 컬럼 지우기
+rem8<-rename(rem8,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m9<-read_excel("D:/aladin_best/2010/2010.09.xlsx")
+rem9<-m9%>% select(순번,상품명)
+rem9<-rem9%>% filter(rem9$순번<=100) #랭킹 100위까지 뽑아냄
+rem9$point9 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem9<-rem9%>%select(-순번) #순번 컬럼 지우기
+rem9<-rename(rem9,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m10<-read_excel("D:/aladin_best/2010/2010.10.xlsx")
+rem10<-m10%>% select(순번,상품명)
+rem10<-rem10%>% filter(rem10$순번<=100) #랭킹 100위까지 뽑아냄
+rem10$point10 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem10<-rem10%>%select(-순번) #순번 컬럼 지우기
+rem10<-rename(rem10,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m11<-read_excel("D:/aladin_best/2010/2010.11.xlsx")
+rem11<-m11%>% select(순번,상품명)
+rem11<-rem11%>% filter(rem11$순번<=100) #랭킹 100위까지 뽑아냄
+rem11$point11 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem11<-rem11%>%select(-순번) #순번 컬럼 지우기
+rem11<-rename(rem11,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m12<-read_excel("D:/aladin_best/2010/2010.12.xlsx")
+rem12<-m12%>% select(순번,상품명)
+rem12<-rem12%>% filter(rem12$순번<=100) #랭킹 100위까지 뽑아냄
+rem12$point12 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem12<-rem12%>%select(-순번) #순번 컬럼 지우기
+rem12<-rename(rem12,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+#통합
+total_point <-full_join(rem1,rem2,by='name') #최대 2개의 프레임만 병합가능
+total_point<-full_join(total_point,rem3,by='name')
+total_point<-full_join(total_point,rem4,by='name')
+total_point<-full_join(total_point,rem5,by='name')
+total_point<-full_join(total_point,rem6,by='name')
+total_point<-full_join(total_point,rem7,by='name')
+total_point<-full_join(total_point,rem8,by='name')
+total_point<-full_join(total_point,rem9,by='name')
+total_point<-full_join(total_point,rem10,by='name')
+total_point<-full_join(total_point,rem11,by='name')
+total_point<-full_join(total_point,rem12,by='name')
+
+#결측값 NA를 0으로 변환
+total_point[is.na(total_point)]<-0
+
+#각 책별로 월별 포인트 값 모두 더하기 
+total_point$total.point <-total_point$point1+total_point$point2+total_point$point3+
+  total_point$point4+total_point$point5+total_point$point6+total_point$point7+
+  total_point$point8+total_point$point9+total_point$point10+total_point$point11+
+  total_point$point12
+
+#필요 없어진 컬럼 제거(point1,point2......point12)
+total_point<-total_point%>%select(-point1,-point2,-point3,-point4,-point5,-point6,
+                                  -point7,-point8,-point9,-point10,-point11,-point12) 
+
+#point가 제일 큰값이 앞에 오게 정렬
+total_point_order <- total_point[c(order(-total_point$total.point)),]
+#상위값 1~5까지만 추출
+total_point_order<-head(total_point_order,n=5)
+#빈도값 컬럼 추가(그래프 표현시 모양이 예쁘게 나오기 위해)
+total_point_order$freq <-c(100,80,60,40,20)
+
+#csv파일로 내보내기
+write.csv(total_point_order,"D:/aladin_best/years_top1~5/top5_2010.csv",row.names=FALSE)
+
+
+
+#2011년 데이터 전처리&csv 파일내보내기
+m1<-read_excel("D:/aladin_best/2011/2011.01.xlsx")
+rem1<-m1%>% select(순번,상품명)
+rem1<-rem1%>% filter(rem1$순번<=100) #랭킹 100위까지 뽑아냄
+rem1$point1 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem1<-rem1%>%select(-순번) #순번 컬럼 지우기
+rem1<-rename(rem1,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m2<-read_excel("D:/aladin_best/2011/2011.02.xlsx")
+rem2<-m2%>% select(순번,상품명)
+rem2<-rem2%>% filter(rem2$순번<=100) #랭킹 100위까지 뽑아냄
+rem2$point2 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem2<-rem2%>%select(-순번) #순번 컬럼 지우기
+rem2<-rename(rem2,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m3<-read_excel("D:/aladin_best/2011/2011.03.xlsx")
+rem3<-m3%>% select(순번,상품명)
+rem3<-rem3%>% filter(rem3$순번<=100) #랭킹 100위까지 뽑아냄
+rem3$point3 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem3<-rem3%>%select(-순번) #순번 컬럼 지우기
+rem3<-rename(rem3,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m4<-read_excel("D:/aladin_best/2011/2011.04.xlsx")
+rem4<-m4%>% select(순번,상품명)
+rem4<-rem4%>% filter(rem4$순번<=100) #랭킹 100위까지 뽑아냄
+rem4$point4 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem4<-rem4%>%select(-순번) #순번 컬럼 지우기
+rem4<-rename(rem4,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m5<-read_excel("D:/aladin_best/2011/2011.05.xlsx")
+rem5<-m5%>% select(순번,상품명)
+rem5<-rem5%>% filter(rem5$순번<=100) #랭킹 100위까지 뽑아냄
+rem5$point5 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem5<-rem5%>%select(-순번) #순번 컬럼 지우기
+rem5<-rename(rem5,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m6<-read_excel("D:/aladin_best/2011/2011.06.xlsx")
+rem6<-m6%>% select(순번,상품명)
+rem6<-rem6%>% filter(rem6$순번<=100) #랭킹 100위까지 뽑아냄
+rem6$point6 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem6<-rem6%>%select(-순번) #순번 컬럼 지우기
+rem6<-rename(rem6,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m7<-read_excel("D:/aladin_best/2011/2011.07.xlsx")
+rem7<-m7%>% select(순번,상품명)
+rem7<-rem7%>% filter(rem7$순번<=100) #랭킹 100위까지 뽑아냄
+rem7$point7 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem7<-rem7%>%select(-순번) #순번 컬럼 지우기
+rem7<-rename(rem7,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m8<-read_excel("D:/aladin_best/2011/2011.08.xlsx")
+rem8<-m8%>% select(순번,상품명)
+rem8<-rem8%>% filter(rem8$순번<=100) #랭킹 100위까지 뽑아냄
+rem8$point8 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem8<-rem8%>%select(-순번) #순번 컬럼 지우기
+rem8<-rename(rem8,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m9<-read_excel("D:/aladin_best/2011/2011.09.xlsx")
+rem9<-m9%>% select(순번,상품명)
+rem9<-rem9%>% filter(rem9$순번<=100) #랭킹 100위까지 뽑아냄
+rem9$point9 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem9<-rem9%>%select(-순번) #순번 컬럼 지우기
+rem9<-rename(rem9,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m10<-read_excel("D:/aladin_best/2011/2011.10.xlsx")
+rem10<-m10%>% select(순번,상품명)
+rem10<-rem10%>% filter(rem10$순번<=100) #랭킹 100위까지 뽑아냄
+rem10$point10 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem10<-rem10%>%select(-순번) #순번 컬럼 지우기
+rem10<-rename(rem10,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m11<-read_excel("D:/aladin_best/2011/2011.11.xlsx")
+rem11<-m11%>% select(순번,상품명)
+rem11<-rem11%>% filter(rem11$순번<=100) #랭킹 100위까지 뽑아냄
+rem11$point11 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem11<-rem11%>%select(-순번) #순번 컬럼 지우기
+rem11<-rename(rem11,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m12<-read_excel("D:/aladin_best/2011/2011.12.xlsx")
+rem12<-m12%>% select(순번,상품명)
+rem12<-rem12%>% filter(rem12$순번<=100) #랭킹 100위까지 뽑아냄
+rem12$point12 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem12<-rem12%>%select(-순번) #순번 컬럼 지우기
+rem12<-rename(rem12,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+#통합
+total_point <-full_join(rem1,rem2,by='name') #최대 2개의 프레임만 병합가능
+total_point<-full_join(total_point,rem3,by='name')
+total_point<-full_join(total_point,rem4,by='name')
+total_point<-full_join(total_point,rem5,by='name')
+total_point<-full_join(total_point,rem6,by='name')
+total_point<-full_join(total_point,rem7,by='name')
+total_point<-full_join(total_point,rem8,by='name')
+total_point<-full_join(total_point,rem9,by='name')
+total_point<-full_join(total_point,rem10,by='name')
+total_point<-full_join(total_point,rem11,by='name')
+total_point<-full_join(total_point,rem12,by='name')
+
+#결측값 NA를 0으로 변환
+total_point[is.na(total_point)]<-0
+
+#각 책별로 월별 포인트 값 모두 더하기 
+total_point$total.point <-total_point$point1+total_point$point2+total_point$point3+
+  total_point$point4+total_point$point5+total_point$point6+total_point$point7+
+  total_point$point8+total_point$point9+total_point$point10+total_point$point11+
+  total_point$point12
+
+#필요 없어진 컬럼 제거(point1,point2......point12)
+total_point<-total_point%>%select(-point1,-point2,-point3,-point4,-point5,-point6,
+                                  -point7,-point8,-point9,-point10,-point11,-point12) 
+
+#point가 제일 큰값이 앞에 오게 정렬
+total_point_order <- total_point[c(order(-total_point$total.point)),]
+#상위값 1~5까지만 추출
+total_point_order<-head(total_point_order,n=5)
+#빈도값 컬럼 추가(그래프 표현시 모양이 예쁘게 나오기 위해)
+total_point_order$freq <-c(100,80,60,40,20)
+
+#csv파일로 내보내기
+write.csv(total_point_order,"D:/aladin_best/years_top1~5/top5_2011.csv",row.names=FALSE)
+
+
+
+#2012년 데이터 전처리&csv 파일내보내기
+m1<-read_excel("D:/aladin_best/2012/2012.01.xlsx")
+rem1<-m1%>% select(순번,상품명)
+rem1<-rem1%>% filter(rem1$순번<=100) #랭킹 100위까지 뽑아냄
+rem1$point1 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem1<-rem1%>%select(-순번) #순번 컬럼 지우기
+rem1<-rename(rem1,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m2<-read_excel("D:/aladin_best/2012/2012.02.xlsx")
+rem2<-m2%>% select(순번,상품명)
+rem2<-rem2%>% filter(rem2$순번<=100) #랭킹 100위까지 뽑아냄
+rem2$point2 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem2<-rem2%>%select(-순번) #순번 컬럼 지우기
+rem2<-rename(rem2,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m3<-read_excel("D:/aladin_best/2012/2012.03.xlsx")
+rem3<-m3%>% select(순번,상품명)
+rem3<-rem3%>% filter(rem3$순번<=100) #랭킹 100위까지 뽑아냄
+rem3$point3 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem3<-rem3%>%select(-순번) #순번 컬럼 지우기
+rem3<-rename(rem3,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m4<-read_excel("D:/aladin_best/2012/2012.04.xlsx")
+rem4<-m4%>% select(순번,상품명)
+rem4<-rem4%>% filter(rem4$순번<=100) #랭킹 100위까지 뽑아냄
+rem4$point4 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem4<-rem4%>%select(-순번) #순번 컬럼 지우기
+rem4<-rename(rem4,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m5<-read_excel("D:/aladin_best/2012/2012.05.xlsx")
+rem5<-m5%>% select(순번,상품명)
+rem5<-rem5%>% filter(rem5$순번<=100) #랭킹 100위까지 뽑아냄
+rem5$point5 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem5<-rem5%>%select(-순번) #순번 컬럼 지우기
+rem5<-rename(rem5,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m6<-read_excel("D:/aladin_best/2012/2012.06.xlsx")
+rem6<-m6%>% select(순번,상품명)
+rem6<-rem6%>% filter(rem6$순번<=100) #랭킹 100위까지 뽑아냄
+rem6$point6 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem6<-rem6%>%select(-순번) #순번 컬럼 지우기
+rem6<-rename(rem6,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m7<-read_excel("D:/aladin_best/2012/2012.07.xlsx")
+rem7<-m7%>% select(순번,상품명)
+rem7<-rem7%>% filter(rem7$순번<=100) #랭킹 100위까지 뽑아냄
+rem7$point7 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem7<-rem7%>%select(-순번) #순번 컬럼 지우기
+rem7<-rename(rem7,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m8<-read_excel("D:/aladin_best/2012/2012.08.xlsx")
+rem8<-m8%>% select(순번,상품명)
+rem8<-rem8%>% filter(rem8$순번<=100) #랭킹 100위까지 뽑아냄
+rem8$point8 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem8<-rem8%>%select(-순번) #순번 컬럼 지우기
+rem8<-rename(rem8,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m9<-read_excel("D:/aladin_best/2012/2012.09.xlsx")
+rem9<-m9%>% select(순번,상품명)
+rem9<-rem9%>% filter(rem9$순번<=100) #랭킹 100위까지 뽑아냄
+rem9$point9 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem9<-rem9%>%select(-순번) #순번 컬럼 지우기
+rem9<-rename(rem9,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m10<-read_excel("D:/aladin_best/2012/2012.10.xlsx")
+rem10<-m10%>% select(순번,상품명)
+rem10<-rem10%>% filter(rem10$순번<=100) #랭킹 100위까지 뽑아냄
+rem10$point10 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem10<-rem10%>%select(-순번) #순번 컬럼 지우기
+rem10<-rename(rem10,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m11<-read_excel("D:/aladin_best/2012/2012.11.xlsx")
+rem11<-m11%>% select(순번,상품명)
+rem11<-rem11%>% filter(rem11$순번<=100) #랭킹 100위까지 뽑아냄
+rem11$point11 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem11<-rem11%>%select(-순번) #순번 컬럼 지우기
+rem11<-rename(rem11,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m12<-read_excel("D:/aladin_best/2012/2012.12.xlsx")
+rem12<-m12%>% select(순번,상품명)
+rem12<-rem12%>% filter(rem12$순번<=100) #랭킹 100위까지 뽑아냄
+rem12$point12 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem12<-rem12%>%select(-순번) #순번 컬럼 지우기
+rem12<-rename(rem12,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+#통합
+total_point <-full_join(rem1,rem2,by='name') #최대 2개의 프레임만 병합가능
+total_point<-full_join(total_point,rem3,by='name')
+total_point<-full_join(total_point,rem4,by='name')
+total_point<-full_join(total_point,rem5,by='name')
+total_point<-full_join(total_point,rem6,by='name')
+total_point<-full_join(total_point,rem7,by='name')
+total_point<-full_join(total_point,rem8,by='name')
+total_point<-full_join(total_point,rem9,by='name')
+total_point<-full_join(total_point,rem10,by='name')
+total_point<-full_join(total_point,rem11,by='name')
+total_point<-full_join(total_point,rem12,by='name')
+
+#결측값 NA를 0으로 변환
+total_point[is.na(total_point)]<-0
+
+#각 책별로 월별 포인트 값 모두 더하기 
+total_point$total.point <-total_point$point1+total_point$point2+total_point$point3+
+  total_point$point4+total_point$point5+total_point$point6+total_point$point7+
+  total_point$point8+total_point$point9+total_point$point10+total_point$point11+
+  total_point$point12
+
+#필요 없어진 컬럼 제거(point1,point2......point12)
+total_point<-total_point%>%select(-point1,-point2,-point3,-point4,-point5,-point6,
+                                  -point7,-point8,-point9,-point10,-point11,-point12) 
+
+#point가 제일 큰값이 앞에 오게 정렬
+total_point_order <- total_point[c(order(-total_point$total.point)),]
+#상위값 1~5까지만 추출
+total_point_order<-head(total_point_order,n=5)
+#빈도값 컬럼 추가(그래프 표현시 모양이 예쁘게 나오기 위해)
+total_point_order$freq <-c(100,80,60,40,20)
+
+#csv파일로 내보내기
+write.csv(total_point_order,"D:/aladin_best/years_top1~5/top5_2012.csv",row.names=FALSE)
+
+
+#2013년 데이터 전처리&csv 파일내보내기
+m1<-read_excel("D:/aladin_best/2013/2013.01.xlsx")
+rem1<-m1%>% select(순번,상품명)
+rem1<-rem1%>% filter(rem1$순번<=100) #랭킹 100위까지 뽑아냄
+rem1$point1 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem1<-rem1%>%select(-순번) #순번 컬럼 지우기
+rem1<-rename(rem1,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m2<-read_excel("D:/aladin_best/2013/2013.02.xlsx")
+rem2<-m2%>% select(순번,상품명)
+rem2<-rem2%>% filter(rem2$순번<=100) #랭킹 100위까지 뽑아냄
+rem2$point2 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem2<-rem2%>%select(-순번) #순번 컬럼 지우기
+rem2<-rename(rem2,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m3<-read_excel("D:/aladin_best/2013/2013.03.xlsx")
+rem3<-m3%>% select(순번,상품명)
+rem3<-rem3%>% filter(rem3$순번<=100) #랭킹 100위까지 뽑아냄
+rem3$point3 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem3<-rem3%>%select(-순번) #순번 컬럼 지우기
+rem3<-rename(rem3,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m4<-read_excel("D:/aladin_best/2013/2013.04.xlsx")
+rem4<-m4%>% select(순번,상품명)
+rem4<-rem4%>% filter(rem4$순번<=100) #랭킹 100위까지 뽑아냄
+rem4$point4 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem4<-rem4%>%select(-순번) #순번 컬럼 지우기
+rem4<-rename(rem4,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m5<-read_excel("D:/aladin_best/2013/2013.05.xlsx")
+rem5<-m5%>% select(순번,상품명)
+rem5<-rem5%>% filter(rem5$순번<=100) #랭킹 100위까지 뽑아냄
+rem5$point5 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem5<-rem5%>%select(-순번) #순번 컬럼 지우기
+rem5<-rename(rem5,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m6<-read_excel("D:/aladin_best/2013/2013.06.xlsx")
+rem6<-m6%>% select(순번,상품명)
+rem6<-rem6%>% filter(rem6$순번<=100) #랭킹 100위까지 뽑아냄
+rem6$point6 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem6<-rem6%>%select(-순번) #순번 컬럼 지우기
+rem6<-rename(rem6,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m7<-read_excel("D:/aladin_best/2013/2013.07.xlsx")
+rem7<-m7%>% select(순번,상품명)
+rem7<-rem7%>% filter(rem7$순번<=100) #랭킹 100위까지 뽑아냄
+rem7$point7 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem7<-rem7%>%select(-순번) #순번 컬럼 지우기
+rem7<-rename(rem7,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m8<-read_excel("D:/aladin_best/2013/2013.08.xlsx")
+rem8<-m8%>% select(순번,상품명)
+rem8<-rem8%>% filter(rem8$순번<=100) #랭킹 100위까지 뽑아냄
+rem8$point8 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem8<-rem8%>%select(-순번) #순번 컬럼 지우기
+rem8<-rename(rem8,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m9<-read_excel("D:/aladin_best/2013/2013.09.xlsx")
+rem9<-m9%>% select(순번,상품명)
+rem9<-rem9%>% filter(rem9$순번<=100) #랭킹 100위까지 뽑아냄
+rem9$point9 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem9<-rem9%>%select(-순번) #순번 컬럼 지우기
+rem9<-rename(rem9,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m10<-read_excel("D:/aladin_best/2013/2013.10.xlsx")
+rem10<-m10%>% select(순번,상품명)
+rem10<-rem10%>% filter(rem10$순번<=100) #랭킹 100위까지 뽑아냄
+rem10$point10 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem10<-rem10%>%select(-순번) #순번 컬럼 지우기
+rem10<-rename(rem10,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+
+#****2013년도 11월은 68위가 마지막 ****
+m11<-read_excel("D:/aladin_best/2013/2013.11.xlsx")
+rem11<-m11%>% select(순번,상품명)
+rem11<-rem11%>% filter(rem11$순번<=68) #랭킹 100위까지 뽑아냄
+rem11$point11 <-seq(68,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem11<-rem11%>%select(-순번) #순번 컬럼 지우기
+rem11<-rename(rem11,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m12<-read_excel("D:/aladin_best/2013/2013.12.xlsx")
+rem12<-m12%>% select(순번,상품명)
+rem12<-rem12%>% filter(rem12$순번<=100) #랭킹 100위까지 뽑아냄
+rem12$point12 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem12<-rem12%>%select(-순번) #순번 컬럼 지우기
+rem12<-rename(rem12,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+#통합
+total_point <-full_join(rem1,rem2,by='name') #최대 2개의 프레임만 병합가능
+total_point<-full_join(total_point,rem3,by='name')
+total_point<-full_join(total_point,rem4,by='name')
+total_point<-full_join(total_point,rem5,by='name')
+total_point<-full_join(total_point,rem6,by='name')
+total_point<-full_join(total_point,rem7,by='name')
+total_point<-full_join(total_point,rem8,by='name')
+total_point<-full_join(total_point,rem9,by='name')
+total_point<-full_join(total_point,rem10,by='name')
+total_point<-full_join(total_point,rem11,by='name')
+total_point<-full_join(total_point,rem12,by='name')
+
+#결측값 NA를 0으로 변환
+total_point[is.na(total_point)]<-0
+
+#각 책별로 월별 포인트 값 모두 더하기 
+total_point$total.point <-total_point$point1+total_point$point2+total_point$point3+
+  total_point$point4+total_point$point5+total_point$point6+total_point$point7+
+  total_point$point8+total_point$point9+total_point$point10+total_point$point11+
+  total_point$point12
+
+#필요 없어진 컬럼 제거(point1,point2......point12)
+total_point<-total_point%>%select(-point1,-point2,-point3,-point4,-point5,-point6,
+                                  -point7,-point8,-point9,-point10,-point11,-point12) 
+
+#point가 제일 큰값이 앞에 오게 정렬
+total_point_order <- total_point[c(order(-total_point$total.point)),]
+#상위값 1~5까지만 추출
+total_point_order<-head(total_point_order,n=5)
+#빈도값 컬럼 추가(그래프 표현시 모양이 예쁘게 나오기 위해)
+total_point_order$freq <-c(100,80,60,40,20)
+
+#csv파일로 내보내기
+write.csv(total_point_order,"D:/aladin_best/years_top1~5/top5_2013.csv",row.names=FALSE)
+
+
+
+#2014년 데이터 전처리&csv 파일내보내기
+m1<-read_excel("D:/aladin_best/2014/2014.01.xlsx")
+rem1<-m1%>% select(순번,상품명)
+rem1<-rem1%>% filter(rem1$순번<=100) #랭킹 100위까지 뽑아냄
+rem1$point1 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem1<-rem1%>%select(-순번) #순번 컬럼 지우기
+rem1<-rename(rem1,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m2<-read_excel("D:/aladin_best/2014/2014.02.xlsx")
+rem2<-m2%>% select(순번,상품명)
+rem2<-rem2%>% filter(rem2$순번<=100) #랭킹 100위까지 뽑아냄
+rem2$point2 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem2<-rem2%>%select(-순번) #순번 컬럼 지우기
+rem2<-rename(rem2,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m3<-read_excel("D:/aladin_best/2014/2014.03.xlsx")
+rem3<-m3%>% select(순번,상품명)
+rem3<-rem3%>% filter(rem3$순번<=100) #랭킹 100위까지 뽑아냄
+rem3$point3 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem3<-rem3%>%select(-순번) #순번 컬럼 지우기
+rem3<-rename(rem3,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m4<-read_excel("D:/aladin_best/2014/2014.04.xlsx")
+rem4<-m4%>% select(순번,상품명)
+rem4<-rem4%>% filter(rem4$순번<=100) #랭킹 100위까지 뽑아냄
+rem4$point4 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem4<-rem4%>%select(-순번) #순번 컬럼 지우기
+rem4<-rename(rem4,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m5<-read_excel("D:/aladin_best/2014/2014.05.xlsx")
+rem5<-m5%>% select(순번,상품명)
+rem5<-rem5%>% filter(rem5$순번<=100) #랭킹 100위까지 뽑아냄
+rem5$point5 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem5<-rem5%>%select(-순번) #순번 컬럼 지우기
+rem5<-rename(rem5,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m6<-read_excel("D:/aladin_best/2014/2014.06.xlsx")
+rem6<-m6%>% select(순번,상품명)
+rem6<-rem6%>% filter(rem6$순번<=100) #랭킹 100위까지 뽑아냄
+rem6$point6 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem6<-rem6%>%select(-순번) #순번 컬럼 지우기
+rem6<-rename(rem6,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m7<-read_excel("D:/aladin_best/2014/2014.07.xlsx")
+rem7<-m7%>% select(순번,상품명)
+rem7<-rem7%>% filter(rem7$순번<=100) #랭킹 100위까지 뽑아냄
+rem7$point7 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem7<-rem7%>%select(-순번) #순번 컬럼 지우기
+rem7<-rename(rem7,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m8<-read_excel("D:/aladin_best/2014/2014.08.xlsx")
+rem8<-m8%>% select(순번,상품명)
+rem8<-rem8%>% filter(rem8$순번<=100) #랭킹 100위까지 뽑아냄
+rem8$point8 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem8<-rem8%>%select(-순번) #순번 컬럼 지우기
+rem8<-rename(rem8,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m9<-read_excel("D:/aladin_best/2014/2014.09.xlsx")
+rem9<-m9%>% select(순번,상품명)
+rem9<-rem9%>% filter(rem9$순번<=100) #랭킹 100위까지 뽑아냄
+rem9$point9 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem9<-rem9%>%select(-순번) #순번 컬럼 지우기
+rem9<-rename(rem9,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m10<-read_excel("D:/aladin_best/2014/2014.10.xlsx")
+rem10<-m10%>% select(순번,상품명)
+rem10<-rem10%>% filter(rem10$순번<=100) #랭킹 100위까지 뽑아냄
+rem10$point10 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem10<-rem10%>%select(-순번) #순번 컬럼 지우기
+rem10<-rename(rem10,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+
+m11<-read_excel("D:/aladin_best/2014/2014.11.xlsx")
+rem11<-m11%>% select(순번,상품명)
+rem11<-rem11%>% filter(rem11$순번<=100) #랭킹 100위까지 뽑아냄
+rem11$point11 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem11<-rem11%>%select(-순번) #순번 컬럼 지우기
+rem11<-rename(rem11,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m12<-read_excel("D:/aladin_best/2014/2014.12.xlsx")
+rem12<-m12%>% select(순번,상품명)
+rem12<-rem12%>% filter(rem12$순번<=100) #랭킹 100위까지 뽑아냄
+rem12$point12 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem12<-rem12%>%select(-순번) #순번 컬럼 지우기
+rem12<-rename(rem12,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+#통합
+total_point <-full_join(rem1,rem2,by='name') #최대 2개의 프레임만 병합가능
+total_point<-full_join(total_point,rem3,by='name')
+total_point<-full_join(total_point,rem4,by='name')
+total_point<-full_join(total_point,rem5,by='name')
+total_point<-full_join(total_point,rem6,by='name')
+total_point<-full_join(total_point,rem7,by='name')
+total_point<-full_join(total_point,rem8,by='name')
+total_point<-full_join(total_point,rem9,by='name')
+total_point<-full_join(total_point,rem10,by='name')
+total_point<-full_join(total_point,rem11,by='name')
+total_point<-full_join(total_point,rem12,by='name')
+
+#결측값 NA를 0으로 변환
+total_point[is.na(total_point)]<-0
+
+#각 책별로 월별 포인트 값 모두 더하기 
+total_point$total.point <-total_point$point1+total_point$point2+total_point$point3+
+  total_point$point4+total_point$point5+total_point$point6+total_point$point7+
+  total_point$point8+total_point$point9+total_point$point10+total_point$point11+
+  total_point$point12
+
+#필요 없어진 컬럼 제거(point1,point2......point12)
+total_point<-total_point%>%select(-point1,-point2,-point3,-point4,-point5,-point6,
+                                  -point7,-point8,-point9,-point10,-point11,-point12) 
+
+#point가 제일 큰값이 앞에 오게 정렬
+total_point_order <- total_point[c(order(-total_point$total.point)),]
+#상위값 1~5까지만 추출
+total_point_order<-head(total_point_order,n=5)
+#빈도값 컬럼 추가(그래프 표현시 모양이 예쁘게 나오기 위해)
+total_point_order$freq <-c(100,80,60,40,20)
+
+#csv파일로 내보내기
+write.csv(total_point_order,"D:/aladin_best/years_top1~5/top5_2014.csv",row.names=FALSE)
+
+
+#2015년 데이터 전처리&csv 파일내보내기
+m1<-read_excel("D:/aladin_best/2015/2015.01.xlsx")
+rem1<-m1%>% select(순번,상품명)
+rem1<-rem1%>% filter(rem1$순번<=100) #랭킹 100위까지 뽑아냄
+rem1$point1 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem1<-rem1%>%select(-순번) #순번 컬럼 지우기
+rem1<-rename(rem1,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m2<-read_excel("D:/aladin_best/2015/2015.02.xlsx")
+rem2<-m2%>% select(순번,상품명)
+rem2<-rem2%>% filter(rem2$순번<=100) #랭킹 100위까지 뽑아냄
+rem2$point2 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem2<-rem2%>%select(-순번) #순번 컬럼 지우기
+rem2<-rename(rem2,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m3<-read_excel("D:/aladin_best/2015/2015.03.xlsx")
+rem3<-m3%>% select(순번,상품명)
+rem3<-rem3%>% filter(rem3$순번<=100) #랭킹 100위까지 뽑아냄
+rem3$point3 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem3<-rem3%>%select(-순번) #순번 컬럼 지우기
+rem3<-rename(rem3,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m4<-read_excel("D:/aladin_best/2015/2015.04.xlsx")
+rem4<-m4%>% select(순번,상품명)
+rem4<-rem4%>% filter(rem4$순번<=100) #랭킹 100위까지 뽑아냄
+rem4$point4 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem4<-rem4%>%select(-순번) #순번 컬럼 지우기
+rem4<-rename(rem4,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m5<-read_excel("D:/aladin_best/2015/2015.05.xlsx")
+rem5<-m5%>% select(순번,상품명)
+rem5<-rem5%>% filter(rem5$순번<=100) #랭킹 100위까지 뽑아냄
+rem5$point5 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem5<-rem5%>%select(-순번) #순번 컬럼 지우기
+rem5<-rename(rem5,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m6<-read_excel("D:/aladin_best/2015/2015.06.xlsx")
+rem6<-m6%>% select(순번,상품명)
+rem6<-rem6%>% filter(rem6$순번<=100) #랭킹 100위까지 뽑아냄
+rem6$point6 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem6<-rem6%>%select(-순번) #순번 컬럼 지우기
+rem6<-rename(rem6,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m7<-read_excel("D:/aladin_best/2015/2015.07.xlsx")
+rem7<-m7%>% select(순번,상품명)
+rem7<-rem7%>% filter(rem7$순번<=100) #랭킹 100위까지 뽑아냄
+rem7$point7 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem7<-rem7%>%select(-순번) #순번 컬럼 지우기
+rem7<-rename(rem7,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m8<-read_excel("D:/aladin_best/2015/2015.08.xlsx")
+rem8<-m8%>% select(순번,상품명)
+rem8<-rem8%>% filter(rem8$순번<=100) #랭킹 100위까지 뽑아냄
+rem8$point8 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem8<-rem8%>%select(-순번) #순번 컬럼 지우기
+rem8<-rename(rem8,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m9<-read_excel("D:/aladin_best/2015/2015.09.xlsx")
+rem9<-m9%>% select(순번,상품명)
+rem9<-rem9%>% filter(rem9$순번<=100) #랭킹 100위까지 뽑아냄
+rem9$point9 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem9<-rem9%>%select(-순번) #순번 컬럼 지우기
+rem9<-rename(rem9,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m10<-read_excel("D:/aladin_best/2015/2015.10.xlsx")
+rem10<-m10%>% select(순번,상품명)
+rem10<-rem10%>% filter(rem10$순번<=100) #랭킹 100위까지 뽑아냄
+rem10$point10 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem10<-rem10%>%select(-순번) #순번 컬럼 지우기
+rem10<-rename(rem10,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+
+m11<-read_excel("D:/aladin_best/2015/2015.11.xlsx")
+rem11<-m11%>% select(순번,상품명)
+rem11<-rem11%>% filter(rem11$순번<=100) #랭킹 100위까지 뽑아냄
+rem11$point11 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem11<-rem11%>%select(-순번) #순번 컬럼 지우기
+rem11<-rename(rem11,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m12<-read_excel("D:/aladin_best/2015/2015.12.xlsx")
+rem12<-m12%>% select(순번,상품명)
+rem12<-rem12%>% filter(rem12$순번<=100) #랭킹 100위까지 뽑아냄
+rem12$point12 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem12<-rem12%>%select(-순번) #순번 컬럼 지우기
+rem12<-rename(rem12,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+#통합
+total_point <-full_join(rem1,rem2,by='name') #최대 2개의 프레임만 병합가능
+total_point<-full_join(total_point,rem3,by='name')
+total_point<-full_join(total_point,rem4,by='name')
+total_point<-full_join(total_point,rem5,by='name')
+total_point<-full_join(total_point,rem6,by='name')
+total_point<-full_join(total_point,rem7,by='name')
+total_point<-full_join(total_point,rem8,by='name')
+total_point<-full_join(total_point,rem9,by='name')
+total_point<-full_join(total_point,rem10,by='name')
+total_point<-full_join(total_point,rem11,by='name')
+total_point<-full_join(total_point,rem12,by='name')
+
+#결측값 NA를 0으로 변환
+total_point[is.na(total_point)]<-0
+
+#각 책별로 월별 포인트 값 모두 더하기 
+total_point$total.point <-total_point$point1+total_point$point2+total_point$point3+
+  total_point$point4+total_point$point5+total_point$point6+total_point$point7+
+  total_point$point8+total_point$point9+total_point$point10+total_point$point11+
+  total_point$point12
+
+#필요 없어진 컬럼 제거(point1,point2......point12)
+total_point<-total_point%>%select(-point1,-point2,-point3,-point4,-point5,-point6,
+                                  -point7,-point8,-point9,-point10,-point11,-point12) 
+
+#point가 제일 큰값이 앞에 오게 정렬
+total_point_order <- total_point[c(order(-total_point$total.point)),]
+#상위값 1~5까지만 추출
+total_point_order<-head(total_point_order,n=5)
+#빈도값 컬럼 추가(그래프 표현시 모양이 예쁘게 나오기 위해)
+total_point_order$freq <-c(100,80,60,40,20)
+
+#csv파일로 내보내기
+write.csv(total_point_order,"D:/aladin_best/years_top1~5/top5_2015.csv",row.names=FALSE)
+
+
+
+#2016년 데이터 전처리&csv 파일내보내기
+m1<-read_excel("D:/aladin_best/2016/2016.01.xlsx")
+rem1<-m1%>% select(순번,상품명)
+rem1<-rem1%>% filter(rem1$순번<=100) #랭킹 100위까지 뽑아냄
+rem1$point1 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem1<-rem1%>%select(-순번) #순번 컬럼 지우기
+rem1<-rename(rem1,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m2<-read_excel("D:/aladin_best/2016/2016.02.xlsx")
+rem2<-m2%>% select(순번,상품명)
+rem2<-rem2%>% filter(rem2$순번<=100) #랭킹 100위까지 뽑아냄
+rem2$point2 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem2<-rem2%>%select(-순번) #순번 컬럼 지우기
+rem2<-rename(rem2,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m3<-read_excel("D:/aladin_best/2016/2016.03.xlsx")
+rem3<-m3%>% select(순번,상품명)
+rem3<-rem3%>% filter(rem3$순번<=100) #랭킹 100위까지 뽑아냄
+rem3$point3 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem3<-rem3%>%select(-순번) #순번 컬럼 지우기
+rem3<-rename(rem3,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m4<-read_excel("D:/aladin_best/2016/2016.04.xlsx")
+rem4<-m4%>% select(순번,상품명)
+rem4<-rem4%>% filter(rem4$순번<=100) #랭킹 100위까지 뽑아냄
+rem4$point4 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem4<-rem4%>%select(-순번) #순번 컬럼 지우기
+rem4<-rename(rem4,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m5<-read_excel("D:/aladin_best/2016/2016.05.xlsx")
+rem5<-m5%>% select(순번,상품명)
+rem5<-rem5%>% filter(rem5$순번<=100) #랭킹 100위까지 뽑아냄
+rem5$point5 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem5<-rem5%>%select(-순번) #순번 컬럼 지우기
+rem5<-rename(rem5,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m6<-read_excel("D:/aladin_best/2016/2016.06.xlsx")
+rem6<-m6%>% select(순번,상품명)
+rem6<-rem6%>% filter(rem6$순번<=100) #랭킹 100위까지 뽑아냄
+rem6$point6 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem6<-rem6%>%select(-순번) #순번 컬럼 지우기
+rem6<-rename(rem6,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m7<-read_excel("D:/aladin_best/2016/2016.07.xlsx")
+rem7<-m7%>% select(순번,상품명)
+rem7<-rem7%>% filter(rem7$순번<=100) #랭킹 100위까지 뽑아냄
+rem7$point7 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem7<-rem7%>%select(-순번) #순번 컬럼 지우기
+rem7<-rename(rem7,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m8<-read_excel("D:/aladin_best/2016/2016.08.xlsx")
+rem8<-m8%>% select(순번,상품명)
+rem8<-rem8%>% filter(rem8$순번<=100) #랭킹 100위까지 뽑아냄
+rem8$point8 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem8<-rem8%>%select(-순번) #순번 컬럼 지우기
+rem8<-rename(rem8,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m9<-read_excel("D:/aladin_best/2016/2016.09.xlsx")
+rem9<-m9%>% select(순번,상품명)
+rem9<-rem9%>% filter(rem9$순번<=100) #랭킹 100위까지 뽑아냄
+rem9$point9 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem9<-rem9%>%select(-순번) #순번 컬럼 지우기
+rem9<-rename(rem9,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m10<-read_excel("D:/aladin_best/2016/2016.10.xlsx")
+rem10<-m10%>% select(순번,상품명)
+rem10<-rem10%>% filter(rem10$순번<=100) #랭킹 100위까지 뽑아냄
+rem10$point10 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem10<-rem10%>%select(-순번) #순번 컬럼 지우기
+rem10<-rename(rem10,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+
+m11<-read_excel("D:/aladin_best/2016/2016.11.xlsx")
+rem11<-m11%>% select(순번,상품명)
+rem11<-rem11%>% filter(rem11$순번<=100) #랭킹 100위까지 뽑아냄
+rem11$point11 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem11<-rem11%>%select(-순번) #순번 컬럼 지우기
+rem11<-rename(rem11,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m12<-read_excel("D:/aladin_best/2016/2016.12.xlsx")
+rem12<-m12%>% select(순번,상품명)
+rem12<-rem12%>% filter(rem12$순번<=100) #랭킹 100위까지 뽑아냄
+rem12$point12 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem12<-rem12%>%select(-순번) #순번 컬럼 지우기
+rem12<-rename(rem12,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+#통합
+total_point <-full_join(rem1,rem2,by='name') #최대 2개의 프레임만 병합가능
+total_point<-full_join(total_point,rem3,by='name')
+total_point<-full_join(total_point,rem4,by='name')
+total_point<-full_join(total_point,rem5,by='name')
+total_point<-full_join(total_point,rem6,by='name')
+total_point<-full_join(total_point,rem7,by='name')
+total_point<-full_join(total_point,rem8,by='name')
+total_point<-full_join(total_point,rem9,by='name')
+total_point<-full_join(total_point,rem10,by='name')
+total_point<-full_join(total_point,rem11,by='name')
+total_point<-full_join(total_point,rem12,by='name')
+
+#결측값 NA를 0으로 변환
+total_point[is.na(total_point)]<-0
+
+#각 책별로 월별 포인트 값 모두 더하기 
+total_point$total.point <-total_point$point1+total_point$point2+total_point$point3+
+  total_point$point4+total_point$point5+total_point$point6+total_point$point7+
+  total_point$point8+total_point$point9+total_point$point10+total_point$point11+
+  total_point$point12
+
+#필요 없어진 컬럼 제거(point1,point2......point12)
+total_point<-total_point%>%select(-point1,-point2,-point3,-point4,-point5,-point6,
+                                  -point7,-point8,-point9,-point10,-point11,-point12) 
+
+#point가 제일 큰값이 앞에 오게 정렬
+total_point_order <- total_point[c(order(-total_point$total.point)),]
+#상위값 1~5까지만 추출
+total_point_order<-head(total_point_order,n=5)
+#빈도값 컬럼 추가(그래프 표현시 모양이 예쁘게 나오기 위해)
+total_point_order$freq <-c(100,80,60,40,20)
+
+#csv파일로 내보내기
+write.csv(total_point_order,"D:/aladin_best/years_top1~5/top5_2016.csv",row.names=FALSE)
+
+
+#2017년 데이터 전처리&csv 파일내보내기
+m1<-read_excel("D:/aladin_best/2017/2017.01.xlsx")
+rem1<-m1%>% select(순번,상품명)
+rem1<-rem1%>% filter(rem1$순번<=100) #랭킹 100위까지 뽑아냄
+rem1$point1 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem1<-rem1%>%select(-순번) #순번 컬럼 지우기
+rem1<-rename(rem1,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m2<-read_excel("D:/aladin_best/2017/2017.02.xlsx")
+rem2<-m2%>% select(순번,상품명)
+rem2<-rem2%>% filter(rem2$순번<=100) #랭킹 100위까지 뽑아냄
+rem2$point2 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem2<-rem2%>%select(-순번) #순번 컬럼 지우기
+rem2<-rename(rem2,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m3<-read_excel("D:/aladin_best/2017/2017.03.xlsx")
+rem3<-m3%>% select(순번,상품명)
+rem3<-rem3%>% filter(rem3$순번<=100) #랭킹 100위까지 뽑아냄
+rem3$point3 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem3<-rem3%>%select(-순번) #순번 컬럼 지우기
+rem3<-rename(rem3,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m4<-read_excel("D:/aladin_best/2017/2017.04.xlsx")
+rem4<-m4%>% select(순번,상품명)
+rem4<-rem4%>% filter(rem4$순번<=100) #랭킹 100위까지 뽑아냄
+rem4$point4 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem4<-rem4%>%select(-순번) #순번 컬럼 지우기
+rem4<-rename(rem4,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m5<-read_excel("D:/aladin_best/2017/2017.05.xlsx")
+rem5<-m5%>% select(순번,상품명)
+rem5<-rem5%>% filter(rem5$순번<=100) #랭킹 100위까지 뽑아냄
+rem5$point5 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem5<-rem5%>%select(-순번) #순번 컬럼 지우기
+rem5<-rename(rem5,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m6<-read_excel("D:/aladin_best/2017/2017.06.xlsx")
+rem6<-m6%>% select(순번,상품명)
+rem6<-rem6%>% filter(rem6$순번<=100) #랭킹 100위까지 뽑아냄
+rem6$point6 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem6<-rem6%>%select(-순번) #순번 컬럼 지우기
+rem6<-rename(rem6,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m7<-read_excel("D:/aladin_best/2017/2017.07.xlsx")
+rem7<-m7%>% select(순번,상품명)
+rem7<-rem7%>% filter(rem7$순번<=100) #랭킹 100위까지 뽑아냄
+rem7$point7 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem7<-rem7%>%select(-순번) #순번 컬럼 지우기
+rem7<-rename(rem7,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m8<-read_excel("D:/aladin_best/2017/2017.08.xlsx")
+rem8<-m8%>% select(순번,상품명)
+rem8<-rem8%>% filter(rem8$순번<=100) #랭킹 100위까지 뽑아냄
+rem8$point8 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem8<-rem8%>%select(-순번) #순번 컬럼 지우기
+rem8<-rename(rem8,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m9<-read_excel("D:/aladin_best/2017/2017.09.xlsx")
+rem9<-m9%>% select(순번,상품명)
+rem9<-rem9%>% filter(rem9$순번<=100) #랭킹 100위까지 뽑아냄
+rem9$point9 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem9<-rem9%>%select(-순번) #순번 컬럼 지우기
+rem9<-rename(rem9,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m10<-read_excel("D:/aladin_best/2017/2017.10.xlsx")
+rem10<-m10%>% select(순번,상품명)
+rem10<-rem10%>% filter(rem10$순번<=100) #랭킹 100위까지 뽑아냄
+rem10$point10 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem10<-rem10%>%select(-순번) #순번 컬럼 지우기
+rem10<-rename(rem10,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+
+m11<-read_excel("D:/aladin_best/2017/2017.11.xlsx")
+rem11<-m11%>% select(순번,상품명)
+rem11<-rem11%>% filter(rem11$순번<=100) #랭킹 100위까지 뽑아냄
+rem11$point11 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem11<-rem11%>%select(-순번) #순번 컬럼 지우기
+rem11<-rename(rem11,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m12<-read_excel("D:/aladin_best/2017/2017.12.xlsx")
+rem12<-m12%>% select(순번,상품명)
+rem12<-rem12%>% filter(rem12$순번<=100) #랭킹 100위까지 뽑아냄
+rem12$point12 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem12<-rem12%>%select(-순번) #순번 컬럼 지우기
+rem12<-rename(rem12,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+#통합
+total_point <-full_join(rem1,rem2,by='name') #최대 2개의 프레임만 병합가능
+total_point<-full_join(total_point,rem3,by='name')
+total_point<-full_join(total_point,rem4,by='name')
+total_point<-full_join(total_point,rem5,by='name')
+total_point<-full_join(total_point,rem6,by='name')
+total_point<-full_join(total_point,rem7,by='name')
+total_point<-full_join(total_point,rem8,by='name')
+total_point<-full_join(total_point,rem9,by='name')
+total_point<-full_join(total_point,rem10,by='name')
+total_point<-full_join(total_point,rem11,by='name')
+total_point<-full_join(total_point,rem12,by='name')
+
+#결측값 NA를 0으로 변환
+total_point[is.na(total_point)]<-0
+
+#각 책별로 월별 포인트 값 모두 더하기 
+total_point$total.point <-total_point$point1+total_point$point2+total_point$point3+
+  total_point$point4+total_point$point5+total_point$point6+total_point$point7+
+  total_point$point8+total_point$point9+total_point$point10+total_point$point11+
+  total_point$point12
+
+#필요 없어진 컬럼 제거(point1,point2......point12)
+total_point<-total_point%>%select(-point1,-point2,-point3,-point4,-point5,-point6,
+                                  -point7,-point8,-point9,-point10,-point11,-point12) 
+
+#point가 제일 큰값이 앞에 오게 정렬
+total_point_order <- total_point[c(order(-total_point$total.point)),]
+#상위값 1~5까지만 추출
+total_point_order<-head(total_point_order,n=5)
+#빈도값 컬럼 추가(그래프 표현시 모양이 예쁘게 나오기 위해)
+total_point_order$freq <-c(100,80,60,40,20)
+
+#csv파일로 내보내기
+write.csv(total_point_order,"D:/aladin_best/years_top1~5/top5_2017.csv",row.names=FALSE)
+
+
+
+#2018년 데이터 전처리&csv 파일내보내기
+m1<-read_excel("D:/aladin_best/2018/2018.01.xlsx")
+rem1<-m1%>% select(순번,상품명)
+rem1<-rem1%>% filter(rem1$순번<=100) #랭킹 100위까지 뽑아냄
+rem1$point1 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem1<-rem1%>%select(-순번) #순번 컬럼 지우기
+rem1<-rename(rem1,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m2<-read_excel("D:/aladin_best/2018/2018.02.xlsx")
+rem2<-m2%>% select(순번,상품명)
+rem2<-rem2%>% filter(rem2$순번<=100) #랭킹 100위까지 뽑아냄
+rem2$point2 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem2<-rem2%>%select(-순번) #순번 컬럼 지우기
+rem2<-rename(rem2,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m3<-read_excel("D:/aladin_best/2018/2018.03.xlsx")
+rem3<-m3%>% select(순번,상품명)
+rem3<-rem3%>% filter(rem3$순번<=100) #랭킹 100위까지 뽑아냄
+rem3$point3 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem3<-rem3%>%select(-순번) #순번 컬럼 지우기
+rem3<-rename(rem3,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m4<-read_excel("D:/aladin_best/2018/2018.04.xlsx")
+rem4<-m4%>% select(순번,상품명)
+rem4<-rem4%>% filter(rem4$순번<=100) #랭킹 100위까지 뽑아냄
+rem4$point4 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem4<-rem4%>%select(-순번) #순번 컬럼 지우기
+rem4<-rename(rem4,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m5<-read_excel("D:/aladin_best/2018/2018.05.xlsx")
+rem5<-m5%>% select(순번,상품명)
+rem5<-rem5%>% filter(rem5$순번<=100) #랭킹 100위까지 뽑아냄
+rem5$point5 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem5<-rem5%>%select(-순번) #순번 컬럼 지우기
+rem5<-rename(rem5,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m6<-read_excel("D:/aladin_best/2018/2018.06.xlsx")
+rem6<-m6%>% select(순번,상품명)
+rem6<-rem6%>% filter(rem6$순번<=100) #랭킹 100위까지 뽑아냄
+rem6$point6 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem6<-rem6%>%select(-순번) #순번 컬럼 지우기
+rem6<-rename(rem6,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m7<-read_excel("D:/aladin_best/2018/2018.07.xlsx")
+rem7<-m7%>% select(순번,상품명)
+rem7<-rem7%>% filter(rem7$순번<=100) #랭킹 100위까지 뽑아냄
+rem7$point7 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem7<-rem7%>%select(-순번) #순번 컬럼 지우기
+rem7<-rename(rem7,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m8<-read_excel("D:/aladin_best/2018/2018.08.xlsx")
+rem8<-m8%>% select(순번,상품명)
+rem8<-rem8%>% filter(rem8$순번<=100) #랭킹 100위까지 뽑아냄
+rem8$point8 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem8<-rem8%>%select(-순번) #순번 컬럼 지우기
+rem8<-rename(rem8,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m9<-read_excel("D:/aladin_best/2018/2018.09.xlsx")
+rem9<-m9%>% select(순번,상품명)
+rem9<-rem9%>% filter(rem9$순번<=100) #랭킹 100위까지 뽑아냄
+rem9$point9 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem9<-rem9%>%select(-순번) #순번 컬럼 지우기
+rem9<-rename(rem9,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m10<-read_excel("D:/aladin_best/2018/2018.10.xlsx")
+rem10<-m10%>% select(순번,상품명)
+rem10<-rem10%>% filter(rem10$순번<=100) #랭킹 100위까지 뽑아냄
+rem10$point10 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem10<-rem10%>%select(-순번) #순번 컬럼 지우기
+rem10<-rename(rem10,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+
+m11<-read_excel("D:/aladin_best/2018/2018.11.xlsx")
+rem11<-m11%>% select(순번,상품명)
+rem11<-rem11%>% filter(rem11$순번<=100) #랭킹 100위까지 뽑아냄
+rem11$point11 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem11<-rem11%>%select(-순번) #순번 컬럼 지우기
+rem11<-rename(rem11,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m12<-read_excel("D:/aladin_best/2018/2018.12.xlsx")
+rem12<-m12%>% select(순번,상품명)
+rem12<-rem12%>% filter(rem12$순번<=100) #랭킹 100위까지 뽑아냄
+rem12$point12 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem12<-rem12%>%select(-순번) #순번 컬럼 지우기
+rem12<-rename(rem12,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+#통합
+total_point <-full_join(rem1,rem2,by='name') #최대 2개의 프레임만 병합가능
+total_point<-full_join(total_point,rem3,by='name')
+total_point<-full_join(total_point,rem4,by='name')
+total_point<-full_join(total_point,rem5,by='name')
+total_point<-full_join(total_point,rem6,by='name')
+total_point<-full_join(total_point,rem7,by='name')
+total_point<-full_join(total_point,rem8,by='name')
+total_point<-full_join(total_point,rem9,by='name')
+total_point<-full_join(total_point,rem10,by='name')
+total_point<-full_join(total_point,rem11,by='name')
+total_point<-full_join(total_point,rem12,by='name')
+
+#결측값 NA를 0으로 변환
+total_point[is.na(total_point)]<-0
+
+#각 책별로 월별 포인트 값 모두 더하기 
+total_point$total.point <-total_point$point1+total_point$point2+total_point$point3+
+  total_point$point4+total_point$point5+total_point$point6+total_point$point7+
+  total_point$point8+total_point$point9+total_point$point10+total_point$point11+
+  total_point$point12
+
+#필요 없어진 컬럼 제거(point1,point2......point12)
+total_point<-total_point%>%select(-point1,-point2,-point3,-point4,-point5,-point6,
+                                  -point7,-point8,-point9,-point10,-point11,-point12) 
+
+#point가 제일 큰값이 앞에 오게 정렬
+total_point_order <- total_point[c(order(-total_point$total.point)),]
+#상위값 1~5까지만 추출
+total_point_order<-head(total_point_order,n=5)
+#빈도값 컬럼 추가(그래프 표현시 모양이 예쁘게 나오기 위해)
+total_point_order$freq <-c(100,80,60,40,20)
+
+#csv파일로 내보내기
+write.csv(total_point_order,"D:/aladin_best/years_top1~5/top5_2018.csv",row.names=FALSE)
+
+
+#2019년 데이터 전처리&csv 파일내보내기
+m1<-read_excel("D:/aladin_best/2019/2019.01.xlsx")
+rem1<-m1%>% select(순번,상품명)
+rem1<-rem1%>% filter(rem1$순번<=100) #랭킹 100위까지 뽑아냄
+rem1$point1 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem1<-rem1%>%select(-순번) #순번 컬럼 지우기
+rem1<-rename(rem1,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m2<-read_excel("D:/aladin_best/2019/2019.02.xlsx")
+rem2<-m2%>% select(순번,상품명)
+rem2<-rem2%>% filter(rem2$순번<=100) #랭킹 100위까지 뽑아냄
+rem2$point2 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem2<-rem2%>%select(-순번) #순번 컬럼 지우기
+rem2<-rename(rem2,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m3<-read_excel("D:/aladin_best/2019/2019.03.xlsx")
+rem3<-m3%>% select(순번,상품명)
+rem3<-rem3%>% filter(rem3$순번<=100) #랭킹 100위까지 뽑아냄
+rem3$point3 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem3<-rem3%>%select(-순번) #순번 컬럼 지우기
+rem3<-rename(rem3,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m4<-read_excel("D:/aladin_best/2019/2019.04.xlsx")
+rem4<-m4%>% select(순번,상품명)
+rem4<-rem4%>% filter(rem4$순번<=100) #랭킹 100위까지 뽑아냄
+rem4$point4 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem4<-rem4%>%select(-순번) #순번 컬럼 지우기
+rem4<-rename(rem4,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m5<-read_excel("D:/aladin_best/2019/2019.05.xlsx")
+rem5<-m5%>% select(순번,상품명)
+rem5<-rem5%>% filter(rem5$순번<=100) #랭킹 100위까지 뽑아냄
+rem5$point5 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem5<-rem5%>%select(-순번) #순번 컬럼 지우기
+rem5<-rename(rem5,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m6<-read_excel("D:/aladin_best/2019/2019.06.xlsx")
+rem6<-m6%>% select(순번,상품명)
+rem6<-rem6%>% filter(rem6$순번<=100) #랭킹 100위까지 뽑아냄
+rem6$point6 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem6<-rem6%>%select(-순번) #순번 컬럼 지우기
+rem6<-rename(rem6,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m7<-read_excel("D:/aladin_best/2019/2019.07.xlsx")
+rem7<-m7%>% select(순번,상품명)
+rem7<-rem7%>% filter(rem7$순번<=100) #랭킹 100위까지 뽑아냄
+rem7$point7 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem7<-rem7%>%select(-순번) #순번 컬럼 지우기
+rem7<-rename(rem7,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m8<-read_excel("D:/aladin_best/2019/2019.08.xlsx")
+rem8<-m8%>% select(순번,상품명)
+rem8<-rem8%>% filter(rem8$순번<=100) #랭킹 100위까지 뽑아냄
+rem8$point8 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem8<-rem8%>%select(-순번) #순번 컬럼 지우기
+rem8<-rename(rem8,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m9<-read_excel("D:/aladin_best/2019/2019.09.xlsx")
+rem9<-m9%>% select(순번,상품명)
+rem9<-rem9%>% filter(rem9$순번<=100) #랭킹 100위까지 뽑아냄
+rem9$point9 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem9<-rem9%>%select(-순번) #순번 컬럼 지우기
+rem9<-rename(rem9,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m10<-read_excel("D:/aladin_best/2019/2019.10.xlsx")
+rem10<-m10%>% select(순번,상품명)
+rem10<-rem10%>% filter(rem10$순번<=100) #랭킹 100위까지 뽑아냄
+rem10$point10 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem10<-rem10%>%select(-순번) #순번 컬럼 지우기
+rem10<-rename(rem10,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+
+m11<-read_excel("D:/aladin_best/2019/2019.11.xlsx")
+rem11<-m11%>% select(순번,상품명)
+rem11<-rem11%>% filter(rem11$순번<=100) #랭킹 100위까지 뽑아냄
+rem11$point11 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem11<-rem11%>%select(-순번) #순번 컬럼 지우기
+rem11<-rename(rem11,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m12<-read_excel("D:/aladin_best/2019/2019.12.xlsx")
+rem12<-m12%>% select(순번,상품명)
+rem12<-rem12%>% filter(rem12$순번<=100) #랭킹 100위까지 뽑아냄
+rem12$point12 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem12<-rem12%>%select(-순번) #순번 컬럼 지우기
+rem12<-rename(rem12,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+#통합
+total_point <-full_join(rem1,rem2,by='name') #최대 2개의 프레임만 병합가능
+total_point<-full_join(total_point,rem3,by='name')
+total_point<-full_join(total_point,rem4,by='name')
+total_point<-full_join(total_point,rem5,by='name')
+total_point<-full_join(total_point,rem6,by='name')
+total_point<-full_join(total_point,rem7,by='name')
+total_point<-full_join(total_point,rem8,by='name')
+total_point<-full_join(total_point,rem9,by='name')
+total_point<-full_join(total_point,rem10,by='name')
+total_point<-full_join(total_point,rem11,by='name')
+total_point<-full_join(total_point,rem12,by='name')
+
+#결측값 NA를 0으로 변환
+total_point[is.na(total_point)]<-0
+
+#각 책별로 월별 포인트 값 모두 더하기 
+total_point$total.point <-total_point$point1+total_point$point2+total_point$point3+
+  total_point$point4+total_point$point5+total_point$point6+total_point$point7+
+  total_point$point8+total_point$point9+total_point$point10+total_point$point11+
+  total_point$point12
+
+#필요 없어진 컬럼 제거(point1,point2......point12)
+total_point<-total_point%>%select(-point1,-point2,-point3,-point4,-point5,-point6,
+                                  -point7,-point8,-point9,-point10,-point11,-point12) 
+
+#point가 제일 큰값이 앞에 오게 정렬
+total_point_order <- total_point[c(order(-total_point$total.point)),]
+#상위값 1~5까지만 추출
+total_point_order<-head(total_point_order,n=5)
+#빈도값 컬럼 추가(그래프 표현시 모양이 예쁘게 나오기 위해)
+total_point_order$freq <-c(100,80,60,40,20)
+
+#csv파일로 내보내기
+write.csv(total_point_order,"D:/aladin_best/years_top1~5/top5_2019.csv",row.names=FALSE)
+
+
+#2020년 데이터 전처리&csv 파일내보내기 (2020년은 11월 까지!)
+m1<-read_excel("D:/aladin_best/2020/2020.01.xlsx")
+rem1<-m1%>% select(순번,상품명)
+rem1<-rem1%>% filter(rem1$순번<=100) #랭킹 100위까지 뽑아냄
+rem1$point1 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem1<-rem1%>%select(-순번) #순번 컬럼 지우기
+rem1<-rename(rem1,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m2<-read_excel("D:/aladin_best/2020/2020.02.xlsx")
+rem2<-m2%>% select(순번,상품명)
+rem2<-rem2%>% filter(rem2$순번<=100) #랭킹 100위까지 뽑아냄
+rem2$point2 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem2<-rem2%>%select(-순번) #순번 컬럼 지우기
+rem2<-rename(rem2,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m3<-read_excel("D:/aladin_best/2020/2020.03.xlsx")
+rem3<-m3%>% select(순번,상품명)
+rem3<-rem3%>% filter(rem3$순번<=100) #랭킹 100위까지 뽑아냄
+rem3$point3 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem3<-rem3%>%select(-순번) #순번 컬럼 지우기
+rem3<-rename(rem3,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m4<-read_excel("D:/aladin_best/2020/2020.04.xlsx")
+rem4<-m4%>% select(순번,상품명)
+rem4<-rem4%>% filter(rem4$순번<=100) #랭킹 100위까지 뽑아냄
+rem4$point4 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem4<-rem4%>%select(-순번) #순번 컬럼 지우기
+rem4<-rename(rem4,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m5<-read_excel("D:/aladin_best/2020/2020.05.xlsx")
+rem5<-m5%>% select(순번,상품명)
+rem5<-rem5%>% filter(rem5$순번<=100) #랭킹 100위까지 뽑아냄
+rem5$point5 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem5<-rem5%>%select(-순번) #순번 컬럼 지우기
+rem5<-rename(rem5,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m6<-read_excel("D:/aladin_best/2020/2020.06.xlsx")
+rem6<-m6%>% select(순번,상품명)
+rem6<-rem6%>% filter(rem6$순번<=100) #랭킹 100위까지 뽑아냄
+rem6$point6 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem6<-rem6%>%select(-순번) #순번 컬럼 지우기
+rem6<-rename(rem6,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m7<-read_excel("D:/aladin_best/2020/2020.07.xlsx")
+rem7<-m7%>% select(순번,상품명)
+rem7<-rem7%>% filter(rem7$순번<=100) #랭킹 100위까지 뽑아냄
+rem7$point7 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem7<-rem7%>%select(-순번) #순번 컬럼 지우기
+rem7<-rename(rem7,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m8<-read_excel("D:/aladin_best/2020/2020.08.xlsx")
+rem8<-m8%>% select(순번,상품명)
+rem8<-rem8%>% filter(rem8$순번<=100) #랭킹 100위까지 뽑아냄
+rem8$point8 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem8<-rem8%>%select(-순번) #순번 컬럼 지우기
+rem8<-rename(rem8,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m9<-read_excel("D:/aladin_best/2020/2020.09.xlsx")
+rem9<-m9%>% select(순번,상품명)
+rem9<-rem9%>% filter(rem9$순번<=100) #랭킹 100위까지 뽑아냄
+rem9$point9 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem9<-rem9%>%select(-순번) #순번 컬럼 지우기
+rem9<-rename(rem9,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+m10<-read_excel("D:/aladin_best/2020/2020.10.xlsx")
+rem10<-m10%>% select(순번,상품명)
+rem10<-rem10%>% filter(rem10$순번<=100) #랭킹 100위까지 뽑아냄
+rem10$point10 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem10<-rem10%>%select(-순번) #순번 컬럼 지우기
+rem10<-rename(rem10,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+
+m11<-read_excel("D:/aladin_best/2020/2020.11.xlsx")
+rem11<-m11%>% select(순번,상품명)
+rem11<-rem11%>% filter(rem11$순번<=100) #랭킹 100위까지 뽑아냄
+rem11$point11 <-seq(100,1,by=-1) #1위한텐 100점 부여..2위한텐 99점 부여..
+rem11<-rem11%>%select(-순번) #순번 컬럼 지우기
+rem11<-rename(rem11,"name"="상품명") # 상품명의 컬럼 이름을 name으로 바꿈
+
+
+#통합
+total_point <-full_join(rem1,rem2,by='name') #최대 2개의 프레임만 병합가능
+total_point<-full_join(total_point,rem3,by='name')
+total_point<-full_join(total_point,rem4,by='name')
+total_point<-full_join(total_point,rem5,by='name')
+total_point<-full_join(total_point,rem6,by='name')
+total_point<-full_join(total_point,rem7,by='name')
+total_point<-full_join(total_point,rem8,by='name')
+total_point<-full_join(total_point,rem9,by='name')
+total_point<-full_join(total_point,rem10,by='name')
+total_point<-full_join(total_point,rem11,by='name')
+
+
+#결측값 NA를 0으로 변환
+total_point[is.na(total_point)]<-0
+
+#각 책별로 월별 포인트 값 모두 더하기 
+total_point$total.point <-total_point$point1+total_point$point2+total_point$point3+
+  total_point$point4+total_point$point5+total_point$point6+total_point$point7+
+  total_point$point8+total_point$point9+total_point$point10+total_point$point11
+
+
+#필요 없어진 컬럼 제거(point1,point2......point12)
+total_point<-total_point%>%select(-point1,-point2,-point3,-point4,-point5,-point6,
+                                  -point7,-point8,-point9,-point10,-point11) 
+
+#point가 제일 큰값이 앞에 오게 정렬
+total_point_order <- total_point[c(order(-total_point$total.point)),]
+#상위값 1~5까지만 추출
+total_point_order<-head(total_point_order,n=5)
+#빈도값 컬럼 추가(그래프 표현시 모양이 예쁘게 나오기 위해)
+total_point_order$freq <-c(100,80,60,40,20)
+
+#csv파일로 내보내기
+write.csv(total_point_order,"D:/aladin_best/years_top1~5/top5_2020.csv",row.names=FALSE)
+
+
+#년도별 top5 막대그래프 그리기
+
+
+#2009년 top1-5
+top2009<-read.csv("D:/aladin_best/years_top1~5/top5_2009.csv")
+ggplot(data=top2009, aes(x=reorder(name,freq),y=freq))+
+  geom_bar(stat="identity",fill="red")+ #막대그래프 그리기
+  coord_flip()+ #가로그래프로 그리기 위해 x와 y축 바꾸기
+  labs(x="책제목",y="빈도",title="2009년 베스트셀러 top5")+
+  theme_minimal(base_size=14)+
+  theme(plot.title=element_text(size=18))
+  
+
+#2010년 top1-5
+top2010<-read.csv("D:/aladin_best/years_top1~5/top5_2010.csv")
+ggplot(data=top2010, aes(x=reorder(name,freq),y=freq))+
+  geom_bar(stat="identity",fill="orange")+ #막대그래프 그리기
+  coord_flip()+ #가로그래프로 그리기 위해 x와 y축 바꾸기
+  labs(x="책제목",y="빈도",title="2010년 베스트셀러 top5")+
+  theme_minimal(base_size=14)+
+  theme(plot.title=element_text(size=18))
+
+#2011년 top1-5
+top2011<-read.csv("D:/aladin_best/years_top1~5/top5_2011.csv")
+ggplot(data=top2011, aes(x=reorder(name,freq),y=freq))+
+  geom_bar(stat="identity",fill="yellow")+ #막대그래프 그리기
+  coord_flip()+ #가로그래프로 그리기 위해 x와 y축 바꾸기
+  labs(x="책제목",y="빈도",title="2011년 베스트셀러 top5")+
+  theme_minimal(base_size=14)+
+  theme(plot.title=element_text(size=18))
+
+#2012년 top1-5
+top2012<-read.csv("D:/aladin_best/years_top1~5/top5_2012.csv")
+ggplot(data=top2012, aes(x=reorder(name,freq),y=freq))+
+  geom_bar(stat="identity",fill="green")+ #막대그래프 그리기
+  coord_flip()+ #가로그래프로 그리기 위해 x와 y축 바꾸기
+  labs(x="책제목",y="빈도",title="2012년 베스트셀러 top5")+
+  theme_minimal(base_size=14)+
+  theme(plot.title=element_text(size=18))
+
+#2013년 top1-5
+top2013<-read.csv("D:/aladin_best/years_top1~5/top5_2013.csv")
+ggplot(data=top2013, aes(x=reorder(name,freq),y=freq))+
+  geom_bar(stat="identity",fill="blue")+ #막대그래프 그리기
+  coord_flip()+ #가로그래프로 그리기 위해 x와 y축 바꾸기
+  labs(x="책제목",y="빈도",title="2013년 베스트셀러 top5")+
+  theme_minimal(base_size=14)+
+  theme(plot.title=element_text(size=18))
+
+
+#2014년 top1-5
+top2014<-read.csv("D:/aladin_best/years_top1~5/top5_2014.csv")
+ggplot(data=top2014, aes(x=reorder(name,freq),y=freq))+
+  geom_bar(stat="identity",fill="purple")+ #막대그래프 그리기
+  coord_flip()+ #가로그래프로 그리기 위해 x와 y축 바꾸기
+  labs(x="책제목",y="빈도",title="2014년 베스트셀러 top5")+
+  theme_minimal(base_size=14)+
+  theme(plot.title=element_text(size=18))
+
+#2015년 top1-5
+top2015<-read.csv("D:/aladin_best/years_top1~5/top5_2015.csv")
+ggplot(data=top2015, aes(x=reorder(name,freq),y=freq))+
+  geom_bar(stat="identity",fill="red")+ #막대그래프 그리기
+  coord_flip()+ #가로그래프로 그리기 위해 x와 y축 바꾸기
+  labs(x="책제목",y="빈도",title="2015년 베스트셀러 top5")+
+  theme_minimal(base_size=14)+
+  theme(plot.title=element_text(size=18))
+
+
+#2016년 top1-5
+top2016<-read.csv("D:/aladin_best/years_top1~5/top5_2016.csv")
+ggplot(data=top2016, aes(x=reorder(name,freq),y=freq))+
+  geom_bar(stat="identity",fill="orange")+ #막대그래프 그리기
+  coord_flip()+ #가로그래프로 그리기 위해 x와 y축 바꾸기
+  labs(x="책제목",y="빈도",title="2016년 베스트셀러 top5")+
+  theme_minimal(base_size=14)+
+  theme(plot.title=element_text(size=18))
+
+#2017년 top1-5
+top2017<-read.csv("D:/aladin_best/years_top1~5/top5_2017.csv")
+ggplot(data=top2017, aes(x=reorder(name,freq),y=freq))+
+  geom_bar(stat="identity",fill="yellow")+ #막대그래프 그리기
+  coord_flip()+ #가로그래프로 그리기 위해 x와 y축 바꾸기
+  labs(x="책제목",y="빈도",title="2017년 베스트셀러 top5")+
+  theme_minimal(base_size=14)+
+  theme(plot.title=element_text(size=18))
+
+
+#2018년 top1-5
+top2018<-read.csv("D:/aladin_best/years_top1~5/top5_2018.csv")
+ggplot(data=top2018, aes(x=reorder(name,freq),y=freq))+
+  geom_bar(stat="identity",fill="green")+ #막대그래프 그리기
+  coord_flip()+ #가로그래프로 그리기 위해 x와 y축 바꾸기
+  labs(x="책제목",y="빈도",title="2018년 베스트셀러 top5")+
+  theme_minimal(base_size=14)+
+  theme(plot.title=element_text(size=18))
+
+
+#2019년 top1-5
+top2019<-read.csv("D:/aladin_best/years_top1~5/top5_2019.csv")
+ggplot(data=top2019, aes(x=reorder(name,freq),y=freq))+
+  geom_bar(stat="identity",fill="blue")+ #막대그래프 그리기
+  coord_flip()+ #가로그래프로 그리기 위해 x와 y축 바꾸기
+  labs(x="책제목",y="빈도",title="2019년 베스트셀러 top5")+
+  theme_minimal(base_size=14)+
+  theme(plot.title=element_text(size=18))
+
+
+#2020년 1월-11월 top1-5
+top2020<-read.csv("D:/aladin_best/years_top1~5/top5_2020.csv")
+ggplot(data=top2020, aes(x=reorder(name,freq),y=freq))+
+  geom_bar(stat="identity",fill="purple")+ #막대그래프 그리기
+  coord_flip()+ #가로그래프로 그리기 위해 x와 y축 바꾸기
+  labs(x="책제목",y="빈도",title="2020년 1월~11월 베스트셀러 top5")+
+  theme_minimal(base_size=14)+
+  theme(plot.title=element_text(size=18))
+
+#----------------------------------------------------------------알라딘 데이터 분석 끝
