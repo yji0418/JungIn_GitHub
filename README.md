@@ -1,4 +1,4 @@
- # 안녕하세요
+ # 안녕하세요 👋
 
 <br>
 <img align="right" alt="GIF" src="https://storage.googleapis.com/jjalbot-jjals/2016/10/Skgv8TIC/20160901_57c790147b051.gif" />
