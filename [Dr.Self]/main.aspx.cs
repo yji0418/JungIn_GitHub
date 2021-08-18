@@ -12,12 +12,14 @@ public partial class main : System.Web.UI.Page
 {
     protected void Page_Load(object sender, EventArgs e)
     {
-        Panel1.Visible = true;
-        Panel2.Visible = false;
-        Panel3.Visible = false;
-        Panel4.Visible = false;
+        //패이지가 처음 로드되었을 때 얼굴이미지가 나타나도록 Panel설정
+        Panel1.Visible = true; //머리
+        Panel2.Visible = false; //상체
+        Panel3.Visible = false; //하체
+        Panel4.Visible = false; //결과
         Button_Top.CssClass = "tablink";
         Button_Bottom.CssClass = "tablink";
+        //페이지가 처음 로드되었을 때 Combobox2가 머리에 해당하는 상세부위만 나오도록 로딩
         this.ComboBox2.Items[1].Enabled = true;
         this.ComboBox2.Items[2].Enabled = true;
         this.ComboBox2.Items[3].Enabled = true;
@@ -30,22 +32,23 @@ public partial class main : System.Web.UI.Page
     
     protected void ComboBox1_SelectedIndexChanged(object sender, EventArgs e)
     { 
-        if (this.ComboBox1.SelectedValue == "머리")
+        if (this.ComboBox1.SelectedValue == "머리") //Combobox1에서 [머리]를 선택했다면
         {
             for (int i = 9; i < 23; i++)
             {
-                this.ComboBox2.Items[i].Enabled = false;
+                this.ComboBox2.Items[i].Enabled = false; 
+                //Combobox2목록의 9~22까지 나타나지 않게 설정
             }
             
             //머리 상세부위만 나타나게함
-            this.ComboBox2.Items[1].Enabled = true;
-            this.ComboBox2.Items[2].Enabled = true;
-            this.ComboBox2.Items[3].Enabled = true;
-            this.ComboBox2.Items[4].Enabled = true;
-            this.ComboBox2.Items[5].Enabled = true;
-            this.ComboBox2.Items[6].Enabled = true;
-            this.ComboBox2.Items[7].Enabled = true;
-            this.ComboBox2.Items[8].Enabled = true;
+            this.ComboBox2.Items[1].Enabled = true; //이마
+            this.ComboBox2.Items[2].Enabled = true; //눈
+            this.ComboBox2.Items[3].Enabled = true; //귀
+            this.ComboBox2.Items[4].Enabled = true; //코
+            this.ComboBox2.Items[5].Enabled = true; //치아
+            this.ComboBox2.Items[6].Enabled = true; //입술
+            this.ComboBox2.Items[7].Enabled = true; //목
+            this.ComboBox2.Items[8].Enabled = true; //턱
             Button_Head.CssClass = "tablink_btn";
             Button_Top.CssClass = "tablink";
             Button_Bottom.CssClass = "tablink";
@@ -561,10 +564,10 @@ public partial class main : System.Web.UI.Page
 
     }
 
-    protected void Forehead_Click(object sender, ImageClickEventArgs e)
+    protected void Forehead_Click(object sender, ImageClickEventArgs e) //이미지로 이마를 클릭했을 때
     {
         ComboBox2.SelectedValue = "이마";
-        this.ComboBox2.Items[0].Enabled = false;
+        this.ComboBox2.Items[0].Enabled = false; //위의 콤보박스 선택 변경 이벤트 처리와 동일
         this.ComboBox2.Items[1].Enabled = true;
         this.ComboBox2.Items[2].Enabled = true;
         this.ComboBox2.Items[3].Enabled = true;
@@ -1357,11 +1360,11 @@ public partial class main : System.Web.UI.Page
         this.ComboBox2.Items[22].Enabled = true;
     }
 
-    protected void Button1_Click(object sender, EventArgs e)
+    protected void Button1_Click(object sender, EventArgs e) //결과보기 버튼
     {
-        Panel4.Visible = true;
+        Panel4.Visible = true; //결과 패널 출력
 
-        String conStr = ConfigurationManager.ConnectionStrings["DrSelfDB"].ConnectionString;
+        String conStr = ConfigurationManager.ConnectionStrings["DrSelfDB"].ConnectionString; //DB연결
         SqlConnection con = new SqlConnection(conStr);
 
         String sql = @"select * from dbo.mainDB$ Where 
@@ -1369,7 +1372,8 @@ public partial class main : System.Web.UI.Page
                         OR feeling1 = @feeling1
                         OR feeling2 = @feeling2
                         OR feeling3 = @feeling3";
-
+        
+        //쿼리 실행문에 따라 결과 출력
         SqlCommand cmd = new SqlCommand(sql, con);
 
         cmd.Parameters.AddWithValue("@sum_area", ComboBox2.SelectedValue);
