@@ -15,16 +15,16 @@ public partial class sub1 : System.Web.UI.Page
     {
         if(!IsPostBack)
         {
-            Panel1.Visible = false;
-            Panel2.Visible = false;
-            Panel3.Visible = false;
+            Panel1.Visible = false; //머리 상세부위 숨기기
+            Panel2.Visible = false; //상체 상세부위 숨기기
+            Panel3.Visible = false; //하체 상세부위 숨기기
         }
     }
 
 
-    protected void Button_Head_Click(object sender, EventArgs e)//Panel1
+    protected void Button_Head_Click(object sender, EventArgs e) //머리 버튼 클릭
     {
-        if(Panel1.Visible==true)
+        if(Panel1.Visible==true) //한번누르면 보이고, 다시한번 더 누르면 안보이게
         {
             Panel1.Visible = false;
         }
