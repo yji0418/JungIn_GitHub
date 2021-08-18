@@ -22,7 +22,7 @@ public partial class sub2 : System.Web.UI.Page
         String conStr = ConfigurationManager.ConnectionStrings["DrSelfDB"].ConnectionString;
         SqlConnection con = new SqlConnection(conStr);
 
-        //실행
+        //실행, 검색 조건에 따라서 결과 불러오기
         String sql = @"select * from dbo.drungDB$
                             where
                             name LIKE '%'+@name + '%' AND 
@@ -52,7 +52,7 @@ public partial class sub2 : System.Web.UI.Page
         SqlDataAdapter sda = new SqlDataAdapter(cmd);
         DataSet ds = new DataSet();
         sda.Fill(ds);
-        DataList1.DataSource = ds;
+        DataList1.DataSource = ds; //DataList로 결과 출력
         DataList1.DataBind();
 
         con.Close();
